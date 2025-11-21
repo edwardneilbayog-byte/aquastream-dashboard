@@ -91,6 +91,8 @@ const Index = () => {
               bgColorClass="bg-gradient-pump shadow-glow-pump"
               onClick={activatePump}
               isActive={sensorData.pump}
+              showCountdown={true}
+              countdownDuration={5}
             />
           </div>
         </section>
