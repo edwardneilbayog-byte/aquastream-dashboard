@@ -60,10 +60,14 @@ export default {
       backgroundImage: {
         'aqua-gradient': 'var(--aqua-gradient)',
         'water-shimmer': 'var(--water-shimmer)',
+        'gradient-feeder': 'var(--gradient-feeder)',
+        'gradient-pump': 'var(--gradient-pump)',
       },
       boxShadow: {
         'soft': 'var(--shadow-soft)',
         'elevated': 'var(--shadow-elevated)',
+        'glow-feeder': 'var(--shadow-glow-feeder)',
+        'glow-pump': 'var(--shadow-glow-pump)',
       },
       borderRadius: {
         lg: "var(--radius)",
