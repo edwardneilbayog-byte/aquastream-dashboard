@@ -76,7 +76,7 @@ export const useESP32Control = () => {
 
   const fetchSensorData = useCallback(async () => {
     try {
-      const response = await fetch(`http://${ESP32_IP}/folder_name/sensor_value`, {
+      const response = await fetch(`http://${ESP32_IP}/aquastream-dashboard/sensor_value.json`, {
         mode: 'cors',
       });
       
