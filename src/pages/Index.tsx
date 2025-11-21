@@ -20,58 +20,80 @@ const Index = () => {
   }, [fetchSensorData]);
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background relative overflow-hidden">
+      {/* Ambient background effects */}
+      <div className="fixed inset-0 bg-aqua-gradient opacity-5 pointer-events-none" />
+      <div className="fixed inset-0 bg-water-shimmer opacity-10 pointer-events-none animate-pulse" style={{ animationDuration: '8s' }} />
+      
       <Navigation />
       
-      <main className="container mx-auto px-4 py-6 space-y-6">
-        {/* Camera Feed */}
-        <CameraFeed />
+      <main className="container mx-auto px-4 py-6 space-y-8 relative z-10">
+        {/* Camera Feed Section */}
+        <section className="space-y-3">
+          <div className="flex items-center gap-2">
+            <div className="h-1 w-1 rounded-full bg-red-500 animate-pulse" />
+            <h2 className="text-lg font-semibold text-foreground">Live Camera Feed</h2>
+          </div>
+          <CameraFeed />
+        </section>
 
-        {/* Sensor Data Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-          <SensorCard
-            title="Temperature"
-            value={sensorData.temp.toFixed(1)}
-            unit="°C"
-            icon={Thermometer}
-            colorClass="text-sensor-temp"
-          />
-          <SensorCard
-            title="pH Level"
-            value={sensorData.ph.toFixed(1)}
-            unit="pH"
-            icon={Droplets}
-            colorClass="text-sensor-ph"
-          />
-          <SensorCard
-            title="TDS"
-            value={sensorData.tds.toFixed(0)}
-            unit="ppm"
-            icon={Waves}
-            colorClass="text-sensor-tds"
-          />
-        </div>
+        {/* Sensor Data Section */}
+        <section className="space-y-3">
+          <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
+            <Waves className="h-5 w-5 text-primary" />
+            Water Parameters
+          </h2>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <SensorCard
+              title="Temperature"
+              value={sensorData.temp.toFixed(1)}
+              unit="°C"
+              icon={Thermometer}
+              colorClass="text-sensor-temp"
+            />
+            <SensorCard
+              title="pH Level"
+              value={sensorData.ph.toFixed(1)}
+              unit="pH"
+              icon={Droplets}
+              colorClass="text-sensor-ph"
+            />
+            <SensorCard
+              title="TDS"
+              value={sensorData.tds.toFixed(0)}
+              unit="ppm"
+              icon={Waves}
+              colorClass="text-sensor-tds"
+            />
+          </div>
+        </section>
 
-        {/* Control Buttons */}
-        <div className="grid grid-cols-2 gap-4">
-          <ControlButton
-            title="Fish Feeder"
-            icon={Fish}
-            colorClass="text-white"
-            bgColorClass="bg-control-feeder hover:bg-control-feeder/90"
-            onClick={activateFeeder}
-            isActive={sensorData.feeder}
-            isTactSwitch={true}
-          />
-          <ControlButton
-            title="Water Pump"
-            icon={Droplet}
-            colorClass="text-white"
-            bgColorClass="bg-control-pump hover:bg-control-pump/90"
-            onClick={activatePump}
-            isActive={sensorData.pump}
-          />
-        </div>
+        {/* Control Section */}
+        <section className="space-y-3">
+          <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
+            <Fish className="h-5 w-5 text-control-feeder" />
+            Aquarium Controls
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+            <ControlButton
+              title="Fish Feeder"
+              icon={Fish}
+              colorClass="text-white"
+              bgColorClass="bg-gradient-feeder shadow-glow-feeder"
+              onClick={activateFeeder}
+              isActive={sensorData.feeder}
+              isTactSwitch={true}
+            />
+            <ControlButton
+              title="Water Pump"
+              icon={Droplet}
+              colorClass="text-white"
+              bgColorClass="bg-gradient-pump shadow-glow-pump"
+              onClick={activatePump}
+              isActive={sensorData.pump}
+            />
+          </div>
+        </section>
       </main>
     </div>
   );
