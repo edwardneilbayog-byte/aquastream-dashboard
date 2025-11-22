@@ -7,7 +7,7 @@ import { useESP32Control } from "@/hooks/useESP32Control";
 import { Thermometer, Droplets, Waves, Fish, Droplet } from "lucide-react";
 
 const Index = () => {
-  const { sensorData, activateFeeder, activatePump, fetchSensorData } = useESP32Control();
+  const { sensorData, activateFeeder, deactivateFeeder, activatePump, fetchSensorData } = useESP32Control();
 
   useEffect(() => {
     // Fetch sensor data on mount
@@ -81,6 +81,7 @@ const Index = () => {
               colorClass="text-white"
               bgColorClass="bg-gradient-feeder shadow-glow-feeder"
               onClick={activateFeeder}
+              onRelease={deactivateFeeder}
               isActive={sensorData.feeder}
               isTactSwitch={true}
             />

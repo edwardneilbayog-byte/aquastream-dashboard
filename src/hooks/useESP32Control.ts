@@ -66,6 +66,10 @@ export const useESP32Control = () => {
     sendCommand('feeder', true);
   }, [sendCommand]);
 
+  const deactivateFeeder = useCallback(() => {
+    sendCommand('feeder', false);
+  }, [sendCommand]);
+
   const activatePump = useCallback(() => {
     sendCommand('pump', true);
     // Auto turn off after 5 seconds
@@ -99,6 +103,7 @@ export const useESP32Control = () => {
     sensorData,
     isLoading,
     activateFeeder,
+    deactivateFeeder,
     activatePump,
     fetchSensorData
   };
