@@ -5,7 +5,7 @@ interface CameraFeedProps {
   streamUrl?: string;
 }
 
-const CameraFeed = ({ streamUrl = "http://192.168.0.151" }: CameraFeedProps) => {
+const CameraFeed = ({ streamUrl = "http://192.168.1.151" }: CameraFeedProps) => {
   return (
     <Card className="overflow-hidden shadow-elevated">
       <div className="relative aspect-video bg-muted">

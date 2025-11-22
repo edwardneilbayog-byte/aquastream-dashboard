@@ -9,7 +9,7 @@ interface SensorData {
   feeder: boolean;
 }
 
-const ESP32_IP = "192.168.0.150";
+const ESP32_IP = "192.168.1.150";
 const CONTROL_ENDPOINT = `http://${ESP32_IP}/control`;
 
 export const useESP32Control = () => {
