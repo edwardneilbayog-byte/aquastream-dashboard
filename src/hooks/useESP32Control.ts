@@ -72,10 +72,10 @@ export const useESP32Control = () => {
 
   const activatePump = useCallback(() => {
     sendCommand('pump', true);
-    // Auto turn off after 5 seconds
+    // Auto turn off after 10 seconds
     setTimeout(() => {
       sendCommand('pump', false);
-    }, 5000);
+    }, 10000);
   }, [sendCommand]);
 
   const fetchSensorData = useCallback(async () => {

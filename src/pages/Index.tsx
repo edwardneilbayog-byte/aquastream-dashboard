@@ -53,7 +53,7 @@ const Index = () => {
             />
             <SensorCard
               title="pH Level"
-              value={sensorData.ph.toFixed(1)}
+              value={sensorData.ph.toFixed(2)}
               unit="pH"
               icon={Droplets}
               colorClass="text-sensor-ph"
@@ -93,7 +93,7 @@ const Index = () => {
               onClick={activatePump}
               isActive={sensorData.pump}
               showCountdown={true}
-              countdownDuration={5}
+              countdownDuration={10}
             />
           </div>
         </section>
