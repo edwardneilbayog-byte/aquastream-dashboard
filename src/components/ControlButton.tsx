@@ -11,6 +11,7 @@ interface ControlButtonProps {
   colorClass: string;
   bgColorClass: string;
   onClick: () => void;
+  onRelease?: () => void;
   isActive?: boolean;
   isTactSwitch?: boolean;
   showCountdown?: boolean;
@@ -23,6 +24,7 @@ const ControlButton = ({
   colorClass, 
   bgColorClass,
   onClick,
+  onRelease,
   isActive = false,
   isTactSwitch = false,
   showCountdown = false,
@@ -65,6 +67,9 @@ const ControlButton = ({
   };
 
   const handleRelease = () => {
+    if (isTactSwitch && onRelease) {
+      onRelease();
+    }
     if (!isTactSwitch) {
       setIsPressed(false);
     }
