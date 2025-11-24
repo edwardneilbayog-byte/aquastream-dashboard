@@ -22,6 +22,9 @@ export const useESP32Control = () => {
     feeder: false
   });
   const [isLoading, setIsLoading] = useState(false);
+  const [lastAutoActivation, setLastAutoActivation] = useState<number>(0);
+  
+  const ONE_HOUR_MS = 60 * 60 * 1000; // 1 hour in milliseconds
 
   const sendCommand = useCallback(async (command: string, value: boolean) => {
     setIsLoading(true);
@@ -88,6 +91,7 @@ export const useESP32Control = () => {
         const data = await response.json();
         const newPh = parseFloat(data.ph) || 0;
         const newPumpState = data.pump === '1';
+        const currentTime = Date.now();
         
         setSensorData(prev => {
           const updated = {
@@ -98,9 +102,13 @@ export const useESP32Control = () => {
             feeder: data.feeder === '1'
           };
           
-          // pH Automation: Turn on pump if pH is between 5-6 and pump is not already running
-          if (newPh >= 5 && newPh <= 6 && !newPumpState && !prev.pump) {
+          // pH Automation: Turn on pump if pH is between 5-6, pump is not running, and cooldown has elapsed
+          const timeSinceLastActivation = currentTime - lastAutoActivation;
+          const canAutoActivate = timeSinceLastActivation >= ONE_HOUR_MS || lastAutoActivation === 0;
+          
+          if (newPh >= 5 && newPh <= 6 && !newPumpState && !prev.pump && canAutoActivate) {
             console.log(`pH Automation triggered: pH ${newPh} detected, activating pump`);
+            setLastAutoActivation(currentTime);
             sendCommand('pump', true);
             // Auto turn off after 30 seconds
             setTimeout(() => {
@@ -111,6 +119,9 @@ export const useESP32Control = () => {
               title: "pH Automation Activated",
               description: `pH level ${newPh.toFixed(2)} detected. Water pump activated for 30 seconds.`,
             });
+          } else if (newPh >= 5 && newPh <= 6 && !canAutoActivate) {
+            const remainingTime = Math.ceil((ONE_HOUR_MS - timeSinceLastActivation) / 60000);
+            console.log(`pH Automation on cooldown. ${remainingTime} minutes remaining.`);
           }
           
           return updated;
@@ -119,7 +130,7 @@ export const useESP32Control = () => {
     } catch (error) {
       console.error('Failed to fetch sensor data:', error);
     }
-  }, [sendCommand, toast]);
+  }, [sendCommand, toast, lastAutoActivation, ONE_HOUR_MS]);
 
   return {
     sensorData,
@@ -127,6 +138,7 @@ export const useESP32Control = () => {
     activateFeeder,
     deactivateFeeder,
     activatePump,
-    fetchSensorData
+    fetchSensorData,
+    lastAutoActivation
   };
 };
