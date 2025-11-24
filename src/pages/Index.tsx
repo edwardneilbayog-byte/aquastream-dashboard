@@ -7,7 +7,12 @@ import { useESP32Control } from "@/hooks/useESP32Control";
 import { Thermometer, Droplets, Waves, Fish, Droplet } from "lucide-react";
 
 const Index = () => {
-  const { sensorData, activateFeeder, deactivateFeeder, activatePump, fetchSensorData } = useESP32Control();
+  const { sensorData, activateFeeder, deactivateFeeder, activatePump, fetchSensorData, lastAutoActivation } = useESP32Control();
+  
+  const ONE_HOUR_MS = 60 * 60 * 1000;
+  const timeSinceLastActivation = Date.now() - lastAutoActivation;
+  const canAutoActivate = timeSinceLastActivation >= ONE_HOUR_MS || lastAutoActivation === 0;
+  const remainingMinutes = Math.ceil((ONE_HOUR_MS - timeSinceLastActivation) / 60000);
 
   useEffect(() => {
     // Fetch sensor data on mount
@@ -46,12 +51,26 @@ const Index = () => {
           
           {/* pH Automation Notice */}
           {sensorData.ph >= 5 && sensorData.ph <= 6 && (
-            <div className="bg-gradient-pump/10 border-2 border-control-pump rounded-lg p-4 flex items-start gap-3 animate-pulse">
-              <Droplet className="h-5 w-5 text-control-pump mt-0.5 flex-shrink-0" />
+            <div className={`border-2 rounded-lg p-4 flex items-start gap-3 ${
+              canAutoActivate 
+                ? 'bg-gradient-pump/10 border-control-pump animate-pulse' 
+                : 'bg-muted/50 border-muted-foreground/30'
+            }`}>
+              <Droplet className={`h-5 w-5 mt-0.5 flex-shrink-0 ${
+                canAutoActivate ? 'text-control-pump' : 'text-muted-foreground'
+              }`} />
               <div className="flex-1">
-                <h3 className="font-semibold text-control-pump">pH Automation Active</h3>
+                <h3 className={`font-semibold ${
+                  canAutoActivate ? 'text-control-pump' : 'text-muted-foreground'
+                }`}>
+                  {canAutoActivate ? 'pH Automation Ready' : 'pH Automation Cooldown'}
+                </h3>
                 <p className="text-sm text-muted-foreground mt-1">
-                  pH level is {sensorData.ph.toFixed(2)} (target: 5-6). Water pump will auto-activate for 30 seconds to adjust water quality.
+                  {canAutoActivate ? (
+                    <>pH level is {sensorData.ph.toFixed(2)} (target: 5-6). Water pump will auto-activate for 30 seconds to adjust water quality.</>
+                  ) : (
+                    <>pH level is {sensorData.ph.toFixed(2)} but automation is on cooldown. Next auto-activation available in {remainingMinutes} minute{remainingMinutes !== 1 ? 's' : ''}. Manual control still available.</>
+                  )}
                 </p>
               </div>
             </div>
