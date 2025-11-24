@@ -43,6 +43,20 @@ const Index = () => {
             <Waves className="h-5 w-5 text-primary" />
             Water Parameters
           </h2>
+          
+          {/* pH Automation Notice */}
+          {sensorData.ph >= 5 && sensorData.ph <= 6 && (
+            <div className="bg-gradient-pump/10 border-2 border-control-pump rounded-lg p-4 flex items-start gap-3 animate-pulse">
+              <Droplet className="h-5 w-5 text-control-pump mt-0.5 flex-shrink-0" />
+              <div className="flex-1">
+                <h3 className="font-semibold text-control-pump">pH Automation Active</h3>
+                <p className="text-sm text-muted-foreground mt-1">
+                  pH level is {sensorData.ph.toFixed(2)} (target: 5-6). Water pump will auto-activate for 30 seconds to adjust water quality.
+                </p>
+              </div>
+            </div>
+          )}
+          
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <SensorCard
               title="Temperature"
@@ -93,7 +107,7 @@ const Index = () => {
               onClick={activatePump}
               isActive={sensorData.pump}
               showCountdown={true}
-              countdownDuration={10}
+              countdownDuration={30}
             />
           </div>
         </section>

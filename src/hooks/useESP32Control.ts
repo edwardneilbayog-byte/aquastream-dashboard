@@ -72,10 +72,10 @@ export const useESP32Control = () => {
 
   const activatePump = useCallback(() => {
     sendCommand('pump', true);
-    // Auto turn off after 10 seconds
+    // Auto turn off after 30 seconds
     setTimeout(() => {
       sendCommand('pump', false);
-    }, 10000);
+    }, 30000);
   }, [sendCommand]);
 
   const fetchSensorData = useCallback(async () => {
@@ -86,18 +86,40 @@ export const useESP32Control = () => {
       
       if (response.ok) {
         const data = await response.json();
-        setSensorData({
-          temp: parseFloat(data.temp) || 0,
-          ph: parseFloat(data.ph) || 0,
-          tds: parseFloat(data.tds) || 0,
-          pump: data.pump === '1',
-          feeder: data.feeder === '1'
+        const newPh = parseFloat(data.ph) || 0;
+        const newPumpState = data.pump === '1';
+        
+        setSensorData(prev => {
+          const updated = {
+            temp: parseFloat(data.temp) || 0,
+            ph: newPh,
+            tds: parseFloat(data.tds) || 0,
+            pump: newPumpState,
+            feeder: data.feeder === '1'
+          };
+          
+          // pH Automation: Turn on pump if pH is between 5-6 and pump is not already running
+          if (newPh >= 5 && newPh <= 6 && !newPumpState && !prev.pump) {
+            console.log(`pH Automation triggered: pH ${newPh} detected, activating pump`);
+            sendCommand('pump', true);
+            // Auto turn off after 30 seconds
+            setTimeout(() => {
+              sendCommand('pump', false);
+            }, 30000);
+            
+            toast({
+              title: "pH Automation Activated",
+              description: `pH level ${newPh.toFixed(2)} detected. Water pump activated for 30 seconds.`,
+            });
+          }
+          
+          return updated;
         });
       }
     } catch (error) {
       console.error('Failed to fetch sensor data:', error);
     }
-  }, []);
+  }, [sendCommand, toast]);
 
   return {
     sensorData,
