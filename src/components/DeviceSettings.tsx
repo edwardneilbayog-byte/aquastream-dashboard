@@ -123,14 +123,37 @@ const DeviceSettings = () => {
             </div>
           </div>
 
-          <div className="rounded-lg bg-muted p-4 space-y-2 text-sm">
-            <p className="font-medium">For remote access via ngrok:</p>
-            <ol className="list-decimal list-inside space-y-1 text-muted-foreground">
-              <li>Install ngrok: <code className="text-xs bg-background px-1 rounded">npm install -g ngrok</code></li>
-              <li>Run for ESP32: <code className="text-xs bg-background px-1 rounded">ngrok http 192.168.1.150</code></li>
-              <li>Run for Camera: <code className="text-xs bg-background px-1 rounded">ngrok http 192.168.1.151</code></li>
-              <li>Copy the https URLs and paste them above</li>
+          <div className="rounded-lg bg-muted p-4 space-y-3 text-sm">
+            <p className="font-medium">For remote access via ngrok (Free Plan - 3 tunnels):</p>
+            <ol className="list-decimal list-inside space-y-2 text-muted-foreground">
+              <li>
+                Install ngrok: <code className="text-xs bg-background px-1 rounded">npm install -g ngrok</code>
+              </li>
+              <li>
+                Get auth token from <a href="https://dashboard.ngrok.com/get-started/your-authtoken" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">ngrok.com</a> and add it:
+                <br />
+                <code className="text-xs bg-background px-1 rounded">ngrok config add-authtoken YOUR_TOKEN</code>
+              </li>
+              <li>
+                Create/edit <code className="text-xs bg-background px-1 rounded">ngrok.yml</code> in your ngrok config folder:
+                <pre className="mt-2 p-2 bg-background rounded text-xs overflow-x-auto">
+{`tunnels:
+  esp32-controller:
+    proto: http
+    addr: 192.168.1.150:80
+  esp32-cam:
+    proto: http
+    addr: 192.168.1.151:80`}
+                </pre>
+              </li>
+              <li>
+                Start both tunnels: <code className="text-xs bg-background px-1 rounded">ngrok start --all</code>
+              </li>
+              <li>Copy the https URLs from ngrok terminal and paste them above</li>
             </ol>
+            <p className="text-xs text-muted-foreground mt-2">
+              💡 Tip: Free tier includes 20,000 requests/month. Set polling interval to 5 minutes to stay within limits.
+            </p>
           </div>
 
           <div className="flex gap-2 justify-end">
