@@ -121,20 +121,12 @@ const SettingsDialog = ({ open, onOpenChange }: SettingsDialogProps) => {
                 </div>
               </div>
 
-              {/* Pump Duration */}
+              {/* Pump Duration - Fixed */}
               <div className="space-y-2">
-                <Label htmlFor="pump-duration">Pump Duration (seconds)</Label>
-                <Input
-                  id="pump-duration"
-                  type="number"
-                  min="5"
-                  max="120"
-                  value={localSettings.pumpDuration}
-                  onChange={(e) => setLocalSettings(prev => ({ ...prev, pumpDuration: parseInt(e.target.value) }))}
-                />
-                <p className="text-sm text-muted-foreground">
-                  How long the pump runs when activated
-                </p>
+                <Label>Pump Duration</Label>
+                <div className="flex items-center h-10 px-3 py-2 border border-input bg-muted rounded-md">
+                  <span className="text-sm">30 seconds (hardware limit)</span>
+                </div>
               </div>
 
               {/* Cooldown Period */}
