@@ -27,8 +27,8 @@ const Index = () => {
     // Fetch sensor data on mount
     fetchSensorData();
     
-    // Poll sensor data every 5 seconds
-    const interval = setInterval(fetchSensorData, 5000);
+    // Poll sensor data every 10 seconds
+    const interval = setInterval(fetchSensorData, 10000);
     
     return () => clearInterval(interval);
   }, [fetchSensorData]);
