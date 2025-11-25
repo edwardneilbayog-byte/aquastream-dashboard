@@ -1,7 +1,11 @@
 import { User, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-const Navigation = () => {
+interface NavigationProps {
+  onSettingsClick: () => void;
+}
+
+const Navigation = ({ onSettingsClick }: NavigationProps) => {
   return (
     <nav className="sticky top-0 z-50 w-full border-b border-border bg-card/95 backdrop-blur supports-[backdrop-filter]:bg-card/80">
       <div className="container mx-auto px-4">
@@ -17,7 +21,12 @@ const Navigation = () => {
             <Button variant="ghost" size="icon" className="rounded-full">
               <User className="h-5 w-5" />
             </Button>
-            <Button variant="ghost" size="icon" className="rounded-full">
+            <Button 
+              variant="ghost" 
+              size="icon" 
+              className="rounded-full"
+              onClick={onSettingsClick}
+            >
               <Settings className="h-5 w-5" />
             </Button>
           </div>
