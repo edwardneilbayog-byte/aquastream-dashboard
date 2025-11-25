@@ -1,18 +1,25 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import Navigation from "@/components/Navigation";
 import CameraFeed from "@/components/CameraFeed";
 import SensorCard from "@/components/SensorCard";
 import ControlButton from "@/components/ControlButton";
+import { AutomationSettings } from "@/components/AutomationSettings";
+import { AutomationHistory } from "@/components/AutomationHistory";
 import { useESP32Control } from "@/hooks/useESP32Control";
-import { Thermometer, Droplets, Waves, Fish, Droplet } from "lucide-react";
+import { useAutomationSettings } from "@/hooks/useAutomationSettings";
+import { Button } from "@/components/ui/button";
+import { Thermometer, Droplets, Waves, Fish, Droplet, Settings, History } from "lucide-react";
 
 const Index = () => {
   const { sensorData, activateFeeder, deactivateFeeder, activatePump, fetchSensorData, lastAutoActivation } = useESP32Control();
+  const { settings } = useAutomationSettings();
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [historyOpen, setHistoryOpen] = useState(false);
   
-  const ONE_HOUR_MS = 60 * 60 * 1000;
+  const cooldownMs = settings.cooldownPeriod * 60 * 1000;
   const timeSinceLastActivation = Date.now() - lastAutoActivation;
-  const canAutoActivate = timeSinceLastActivation >= ONE_HOUR_MS || lastAutoActivation === 0;
-  const remainingMinutes = Math.ceil((ONE_HOUR_MS - timeSinceLastActivation) / 60000);
+  const canAutoActivate = timeSinceLastActivation >= cooldownMs || lastAutoActivation === 0;
+  const remainingMinutes = Math.ceil((cooldownMs - timeSinceLastActivation) / 60000);
 
   useEffect(() => {
     // Fetch sensor data on mount
@@ -44,13 +51,25 @@ const Index = () => {
 
         {/* Sensor Data Section */}
         <section className="space-y-3">
-          <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
-            <Waves className="h-5 w-5 text-primary" />
-            Water Parameters
-          </h2>
+          <div className="flex items-center justify-between">
+            <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
+              <Waves className="h-5 w-5 text-primary" />
+              Water Parameters
+            </h2>
+            <div className="flex gap-2">
+              <Button variant="outline" size="sm" onClick={() => setHistoryOpen(true)}>
+                <History className="h-4 w-4 mr-2" />
+                History
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => setSettingsOpen(true)}>
+                <Settings className="h-4 w-4 mr-2" />
+                Settings
+              </Button>
+            </div>
+          </div>
           
           {/* pH Automation Notice */}
-          {sensorData.ph >= 5 && sensorData.ph <= 6 && (
+          {settings.enabled && sensorData.ph >= settings.phMin && sensorData.ph <= settings.phMax && (
             <div className={`border-2 rounded-lg p-4 flex items-start gap-3 ${
               canAutoActivate 
                 ? 'bg-gradient-pump/10 border-control-pump animate-pulse' 
@@ -67,7 +86,7 @@ const Index = () => {
                 </h3>
                 <p className="text-sm text-muted-foreground mt-1">
                   {canAutoActivate ? (
-                    <>pH level is {sensorData.ph.toFixed(2)} (target: 5-6). Water pump will auto-activate for 30 seconds to adjust water quality.</>
+                    <>pH level is {sensorData.ph.toFixed(2)} (target: {settings.phMin}-{settings.phMax}). Water pump will auto-activate for {settings.pumpDuration} seconds to adjust water quality.</>
                   ) : (
                     <>pH level is {sensorData.ph.toFixed(2)} but automation is on cooldown. Next auto-activation available in {remainingMinutes} minute{remainingMinutes !== 1 ? 's' : ''}. Manual control still available.</>
                   )}
@@ -126,11 +145,15 @@ const Index = () => {
               onClick={activatePump}
               isActive={sensorData.pump}
               showCountdown={true}
-              countdownDuration={30}
+              countdownDuration={settings.pumpDuration}
             />
           </div>
         </section>
       </main>
+
+      {/* Automation Settings & History Modals */}
+      <AutomationSettings open={settingsOpen} onOpenChange={setSettingsOpen} />
+      <AutomationHistory open={historyOpen} onOpenChange={setHistoryOpen} />
     </div>
   );
 };
