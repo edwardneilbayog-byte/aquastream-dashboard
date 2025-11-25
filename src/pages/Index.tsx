@@ -3,16 +3,18 @@ import Navigation from "@/components/Navigation";
 import CameraFeed from "@/components/CameraFeed";
 import SensorCard from "@/components/SensorCard";
 import ControlButton from "@/components/ControlButton";
-import { AutomationSettings } from "@/components/AutomationSettings";
+import SettingsDialog from "@/components/SettingsDialog";
 import { AutomationHistory } from "@/components/AutomationHistory";
 import { useESP32Control } from "@/hooks/useESP32Control";
 import { useAutomationSettings } from "@/hooks/useAutomationSettings";
+import { useDeviceSettings } from "@/hooks/useDeviceSettings";
 import { Button } from "@/components/ui/button";
-import { Thermometer, Droplets, Waves, Fish, Droplet, Settings, History } from "lucide-react";
+import { Thermometer, Droplets, Waves, Fish, Droplet, History } from "lucide-react";
 
 const Index = () => {
   const { sensorData, activateFeeder, deactivateFeeder, activatePump, fetchSensorData, lastAutoActivation } = useESP32Control();
   const { settings } = useAutomationSettings();
+  const { settings: deviceSettings } = useDeviceSettings();
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false);
   
@@ -37,7 +39,7 @@ const Index = () => {
       <div className="fixed inset-0 bg-aqua-gradient opacity-5 pointer-events-none" />
       <div className="fixed inset-0 bg-water-shimmer opacity-10 pointer-events-none animate-pulse" style={{ animationDuration: '8s' }} />
       
-      <Navigation />
+      <Navigation onSettingsClick={() => setSettingsOpen(true)} />
       
       <main className="container mx-auto px-4 py-6 space-y-8 relative z-10">
         {/* Camera Feed Section */}
@@ -46,7 +48,7 @@ const Index = () => {
             <div className="h-1 w-1 rounded-full bg-red-500 animate-pulse" />
             <h2 className="text-lg font-semibold text-foreground">Live Camera Feed</h2>
           </div>
-          <CameraFeed />
+          <CameraFeed streamUrl={deviceSettings.cameraUrl} />
         </section>
 
         {/* Sensor Data Section */}
@@ -56,16 +58,10 @@ const Index = () => {
               <Waves className="h-5 w-5 text-primary" />
               Water Parameters
             </h2>
-            <div className="flex gap-2">
-              <Button variant="outline" size="sm" onClick={() => setHistoryOpen(true)}>
-                <History className="h-4 w-4 mr-2" />
-                History
-              </Button>
-              <Button variant="outline" size="sm" onClick={() => setSettingsOpen(true)}>
-                <Settings className="h-4 w-4 mr-2" />
-                Settings
-              </Button>
-            </div>
+            <Button variant="outline" size="sm" onClick={() => setHistoryOpen(true)}>
+              <History className="h-4 w-4 mr-2" />
+              History
+            </Button>
           </div>
           
           {/* pH Automation Notice */}
@@ -151,8 +147,8 @@ const Index = () => {
         </section>
       </main>
 
-      {/* Automation Settings & History Modals */}
-      <AutomationSettings open={settingsOpen} onOpenChange={setSettingsOpen} />
+      {/* Settings & History Modals */}
+      <SettingsDialog open={settingsOpen} onOpenChange={setSettingsOpen} />
       <AutomationHistory open={historyOpen} onOpenChange={setHistoryOpen} />
     </div>
   );

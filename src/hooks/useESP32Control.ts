@@ -2,6 +2,7 @@ import { useState, useCallback } from 'react';
 import { useToast } from '@/components/ui/use-toast';
 import { useAutomationSettings } from './useAutomationSettings';
 import { useAutomationHistory } from './useAutomationHistory';
+import { useDeviceSettings } from './useDeviceSettings';
 
 interface SensorData {
   temp: number;
@@ -11,13 +12,11 @@ interface SensorData {
   feeder: boolean;
 }
 
-const ESP32_IP = "192.168.1.150";
-const CONTROL_ENDPOINT = `http://${ESP32_IP}/control`;
-
 export const useESP32Control = () => {
   const { toast } = useToast();
   const { settings } = useAutomationSettings();
   const { addEvent } = useAutomationHistory();
+  const { settings: deviceSettings } = useDeviceSettings();
   
   const [sensorData, setSensorData] = useState<SensorData>({
     temp: 0,
@@ -32,7 +31,7 @@ export const useESP32Control = () => {
   const sendCommand = useCallback(async (command: string, value: boolean) => {
     setIsLoading(true);
     try {
-      const response = await fetch(CONTROL_ENDPOINT, {
+      const response = await fetch(`${deviceSettings.esp32Url}/control`, {
         method: 'POST',
         mode: 'cors',
         headers: {
@@ -66,7 +65,7 @@ export const useESP32Control = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [toast]);
+  }, [toast, deviceSettings.esp32Url]);
 
   const activateFeeder = useCallback(() => {
     sendCommand('feeder', true);
@@ -96,7 +95,7 @@ export const useESP32Control = () => {
 
   const fetchSensorData = useCallback(async () => {
     try {
-      const response = await fetch(`http://${ESP32_IP}/aquastream-dashboard/sensor_value.json`, {
+      const response = await fetch(`${deviceSettings.esp32Url}/aquastream-dashboard/sensor_value.json`, {
         mode: 'cors',
       });
       
@@ -159,7 +158,7 @@ export const useESP32Control = () => {
     } catch (error) {
       console.error('Failed to fetch sensor data:', error);
     }
-  }, [sendCommand, toast, lastAutoActivation, settings, addEvent]);
+  }, [sendCommand, toast, lastAutoActivation, settings, addEvent, deviceSettings.esp32Url]);
 
   return {
     sensorData,
