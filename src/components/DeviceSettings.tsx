@@ -151,9 +151,9 @@ const DeviceSettings = () => {
               </li>
               <li>Copy the https URLs from ngrok terminal and paste them above</li>
             </ol>
-            <p className="text-xs text-muted-foreground mt-2">
+            {/* <p className="text-xs text-muted-foreground mt-2">
               💡 Tip: Free tier includes 20,000 requests/month. Set polling interval to 5 minutes to stay within limits.
-            </p>
+            </p> */}
           </div>
 
           <div className="flex gap-2 justify-end">
