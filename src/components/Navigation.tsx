@@ -1,5 +1,6 @@
 import { User, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import aquastreamLogo from "@/assets/aquastream-logo.png";
 
 interface NavigationProps {
   onSettingsClick: () => void;
@@ -11,9 +12,9 @@ const Navigation = ({ onSettingsClick }: NavigationProps) => {
       <div className="container mx-auto px-4">
         <div className="flex h-16 items-center justify-between">
           <div className="flex items-center gap-2">
-            <div className="h-8 w-8 rounded-lg bg-aqua-gradient" />
+            <img src={aquastreamLogo} alt="AquaStream Logo" className="h-8 w-8 rounded-lg" />
             <h1 className="text-xl font-bold bg-aqua-gradient bg-clip-text text-transparent">
-              AquaMonitor
+              AquaStream
             </h1>
           </div>
           
