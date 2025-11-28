@@ -122,12 +122,12 @@ const SettingsDialog = ({ open, onOpenChange }: SettingsDialogProps) => {
               </div>
 
               {/* Pump Duration - Fixed */}
-              <div className="space-y-2">
+              {/* <div className="space-y-2">
                 <Label>Pump Duration</Label>
                 <div className="flex items-center h-10 px-3 py-2 border border-input bg-muted rounded-md">
                   <span className="text-sm">30 seconds (calculated duration)</span>
                 </div>
-              </div>
+              </div> */}
 
               {/* Cooldown Period */}
               <div className="space-y-2">
