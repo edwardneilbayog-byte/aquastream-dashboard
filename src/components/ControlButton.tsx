@@ -58,11 +58,20 @@ const ControlButton = ({
     }
   }, [isActive, showCountdown, countdownDuration]);
 
-  const handlePress = () => {
-    setIsPressed(true);
+  const handleClick = () => {
     onClick();
     if (isTactSwitch) {
       setTimeout(() => setIsPressed(false), 200);
+    }
+  };
+
+  const handleMouseDown = () => {
+    setIsPressed(true);
+  };
+
+  const handleMouseUp = () => {
+    if (!isTactSwitch) {
+      setIsPressed(false);
     }
   };
 
@@ -88,11 +97,12 @@ const ControlButton = ({
               : "shadow-elevated hover:scale-[1.02] hover:shadow-xl active:scale-95",
             isActive && "animate-pulse"
           )}
-          onMouseDown={handlePress}
-          onMouseUp={handleRelease}
+          onClick={handleClick}
+          onMouseDown={handleMouseDown}
+          onMouseUp={handleMouseUp}
           onMouseLeave={handleRelease}
-          onTouchStart={handlePress}
-          onTouchEnd={handleRelease}
+          onTouchStart={handleMouseDown}
+          onTouchEnd={handleMouseUp}
         >
           <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
           <div className="flex flex-col items-center gap-2 relative z-10">
