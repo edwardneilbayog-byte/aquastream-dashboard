@@ -1,8 +1,9 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { useToast } from '@/components/ui/use-toast';
 import { useAutomationSettings } from './useAutomationSettings';
 import { useAutomationHistory } from './useAutomationHistory';
 import { useDeviceSettings } from './useDeviceSettings';
+import { useSensorHistory } from './useSensorHistory';
 
 interface SensorData {
   temp: number;
@@ -17,6 +18,8 @@ export const useESP32Control = () => {
   const { settings } = useAutomationSettings();
   const { addEvent } = useAutomationHistory();
   const { settings: deviceSettings } = useDeviceSettings();
+  const { addReading } = useSensorHistory();
+  const lastReadingRef = useRef<number>(0);
   
   const [sensorData, setSensorData] = useState<SensorData>({
     temp: 0,
@@ -98,15 +101,23 @@ export const useESP32Control = () => {
       
       if (response.ok) {
         const data = await response.json();
+        const newTemp = parseFloat(data.temp) || 0;
         const newPh = parseFloat(data.ph) || 0;
+        const newTds = parseFloat(data.tds) || 0;
         const newPumpState = data.pump === '1';
         const currentTime = Date.now();
         
+        // Add to sensor history (limit to once per 30 seconds to avoid spam)
+        if (currentTime - lastReadingRef.current >= 30000) {
+          lastReadingRef.current = currentTime;
+          addReading({ temp: newTemp, ph: newPh, tds: newTds });
+        }
+        
         setSensorData(prev => {
           const updated = {
-            temp: parseFloat(data.temp) || 0,
+            temp: newTemp,
             ph: newPh,
-            tds: parseFloat(data.tds) || 0,
+            tds: newTds,
             pump: newPumpState,
             feeder: data.feeder === '1'
           };
@@ -155,7 +166,7 @@ export const useESP32Control = () => {
     } catch (error) {
       console.error('Failed to fetch sensor data:', error);
     }
-  }, [sendCommand, toast, lastAutoActivation, settings, addEvent, deviceSettings.esp32Url]);
+  }, [sendCommand, toast, lastAutoActivation, settings, addEvent, deviceSettings.esp32Url, addReading]);
 
   return {
     sensorData,
