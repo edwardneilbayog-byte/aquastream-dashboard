@@ -2,95 +2,103 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
-
 @layer base {
   :root {
     --background: 210 40% 98%;
-    --foreground: 210 100% 8%;
+    --foreground: 210 40% 15%;
 
     --card: 0 0% 100%;
-    --card-foreground: 210 100% 8%;
+    --card-foreground: 210 40% 15%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 210 100% 8%;
+    --popover-foreground: 210 40% 15%;
 
-    --primary: 195 100% 42%;
+    --primary: 195 85% 45%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 180 45% 88%;
-    --secondary-foreground: 195 100% 20%;
+    --secondary: 210 25% 93%;
+    --secondary-foreground: 210 40% 25%;
 
-    --muted: 210 40% 94%;
-    --muted-foreground: 210 20% 45%;
+    --muted: 210 25% 95%;
+    --muted-foreground: 210 15% 50%;
 
-    --accent: 174 62% 47%;
+    --accent: 170 60% 45%;
     --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 84.2% 60.2%;
+    --destructive: 0 75% 55%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 210 30% 88%;
-    --input: 210 30% 88%;
-    --ring: 195 100% 42%;
+    --border: 210 20% 90%;
+    --input: 210 20% 90%;
+    --ring: 195 85% 45%;
 
-    --radius: 0.75rem;
+    --radius: 1rem;
 
-    --aqua-gradient: linear-gradient(135deg, hsl(195 100% 42%), hsl(174 62% 47%));
-    --water-shimmer: linear-gradient(120deg, transparent, hsla(195 100% 70% / 0.3), transparent);
+    /* Gradients */
+    --aqua-gradient: linear-gradient(135deg, hsl(195 85% 45%), hsl(170 60% 45%));
+    --water-shimmer: linear-gradient(120deg, transparent, hsla(195 85% 70% / 0.2), transparent);
     
-    --sensor-temp: 195 100% 42%;
-    --sensor-ph: 274 70% 55%;
-    --sensor-tds: 174 62% 47%;
+    /* Sensor colors */
+    --sensor-temp: 15 85% 55%;
+    --sensor-ph: 260 65% 55%;
+    --sensor-tds: 170 60% 45%;
     
-    --control-feeder: 45 93% 58%;
-    --control-pump: 195 100% 42%;
+    /* Control colors */
+    --control-feeder: 35 90% 55%;
+    --control-pump: 195 85% 45%;
 
-    --shadow-soft: 0 4px 16px hsla(210 40% 20% / 0.08);
-    --shadow-elevated: 0 8px 32px hsla(210 40% 20% / 0.12);
-    --shadow-glow-feeder: 0 8px 24px hsla(45 93% 58% / 0.4);
-    --shadow-glow-pump: 0 8px 24px hsla(195 100% 42% / 0.4);
+    /* Shadows */
+    --shadow-soft: 0 4px 20px hsla(210 40% 20% / 0.06);
+    --shadow-elevated: 0 12px 40px hsla(210 40% 20% / 0.1);
+    --shadow-glow-feeder: 0 8px 30px hsla(35 90% 55% / 0.35);
+    --shadow-glow-pump: 0 8px 30px hsla(195 85% 45% / 0.35);
     
-    --gradient-feeder: linear-gradient(135deg, hsl(45 93% 58%), hsl(35 90% 50%));
-    --gradient-pump: linear-gradient(135deg, hsl(195 100% 42%), hsl(205 100% 50%));
+    /* Control gradients */
+    --gradient-feeder: linear-gradient(145deg, hsl(40 90% 55%), hsl(25 85% 50%));
+    --gradient-pump: linear-gradient(145deg, hsl(195 85% 50%), hsl(210 80% 55%));
+
+    /* Glass effect */
+    --glass-bg: hsla(0 0% 100% / 0.7);
+    --glass-border: hsla(0 0% 100% / 0.5);
   }
 
   .dark {
-    --background: 210 50% 6%;
-    --foreground: 210 40% 98%;
+    --background: 220 30% 8%;
+    --foreground: 210 30% 95%;
 
-    --card: 210 45% 10%;
-    --card-foreground: 210 40% 98%;
+    --card: 220 25% 12%;
+    --card-foreground: 210 30% 95%;
 
-    --popover: 210 45% 10%;
-    --popover-foreground: 210 40% 98%;
+    --popover: 220 25% 12%;
+    --popover-foreground: 210 30% 95%;
 
-    --primary: 195 100% 50%;
-    --primary-foreground: 210 100% 8%;
+    --primary: 195 80% 55%;
+    --primary-foreground: 220 30% 8%;
 
-    --secondary: 210 40% 16%;
-    --secondary-foreground: 195 100% 80%;
+    --secondary: 220 25% 18%;
+    --secondary-foreground: 195 70% 75%;
 
-    --muted: 210 40% 14%;
-    --muted-foreground: 210 20% 65%;
+    --muted: 220 25% 15%;
+    --muted-foreground: 210 15% 60%;
 
-    --accent: 174 62% 47%;
-    --accent-foreground: 210 100% 8%;
+    --accent: 170 55% 50%;
+    --accent-foreground: 220 30% 8%;
 
-    --destructive: 0 84.2% 60.2%;
+    --destructive: 0 70% 55%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 210 40% 18%;
-    --input: 210 40% 18%;
-    --ring: 195 100% 50%;
+    --border: 220 25% 20%;
+    --input: 220 25% 20%;
+    --ring: 195 80% 55%;
 
-    --aqua-gradient: linear-gradient(135deg, hsl(195 100% 50%), hsl(174 62% 47%));
-    --water-shimmer: linear-gradient(120deg, transparent, hsla(195 100% 70% / 0.2), transparent);
+    --aqua-gradient: linear-gradient(135deg, hsl(195 80% 55%), hsl(170 55% 50%));
+    --water-shimmer: linear-gradient(120deg, transparent, hsla(195 80% 60% / 0.15), transparent);
     
-    --shadow-soft: 0 4px 16px hsla(0 0% 0% / 0.3);
-    --shadow-elevated: 0 8px 32px hsla(0 0% 0% / 0.4);
+    --shadow-soft: 0 4px 20px hsla(0 0% 0% / 0.25);
+    --shadow-elevated: 0 12px 40px hsla(0 0% 0% / 0.35);
+
+    --glass-bg: hsla(220 25% 12% / 0.8);
+    --glass-border: hsla(220 25% 25% / 0.5);
   }
 }
 
@@ -100,6 +108,49 @@ All colors MUST be HSL.
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground antialiased;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+}
+
+@layer utilities {
+  .glass {
+    background: var(--glass-bg);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid var(--glass-border);
+  }
+
+  .glass-card {
+    @apply glass rounded-2xl shadow-soft;
+  }
+
+  .btn-glass {
+    @apply glass rounded-xl px-6 py-3 font-medium transition-all duration-300;
+    @apply hover:shadow-elevated hover:scale-[1.02] active:scale-[0.98];
+  }
+
+  .text-gradient {
+    @apply bg-aqua-gradient bg-clip-text text-transparent;
+  }
+}
+
+@layer components {
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+
+  .animate-shimmer {
+    animation: shimmer 3s ease-in-out infinite;
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+  }
+
+  @keyframes shimmer {
+    0%, 100% { opacity: 0.5; }
+    50% { opacity: 1; }
   }
 }
