@@ -1,3 +1,4 @@
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -11,20 +12,20 @@ interface SensorCardProps {
 
 const SensorCard = ({ title, value, unit, icon: Icon, colorClass }: SensorCardProps) => {
   return (
-    <div className="glass-card p-6 transition-all duration-300 hover:shadow-elevated hover:-translate-y-1">
-      <div className="flex items-start justify-between mb-4">
-        <div className={cn("w-12 h-12 rounded-xl flex items-center justify-center", colorClass, "bg-current/10")}>
-          <Icon className={cn("h-6 w-6", colorClass)} />
-        </div>
-      </div>
-      <div>
-        <p className="text-sm text-muted-foreground mb-1">{title}</p>
+    <Card className="shadow-soft hover:shadow-elevated transition-shadow">
+      <CardHeader className="pb-3">
+        <CardTitle className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+          <Icon className={cn("h-4 w-4", colorClass)} />
+          {title}
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
         <div className="flex items-baseline gap-1">
-          <span className={cn("text-3xl font-bold", colorClass)}>{value}</span>
+          <span className="text-3xl font-bold">{value}</span>
           <span className="text-sm text-muted-foreground">{unit}</span>
         </div>
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 };
 
