@@ -42,14 +42,12 @@ const Index = () => {
       
       <main className="container mx-auto px-4 py-8 space-y-8 relative z-10">
         {/* Camera Feed Section */}
-        <section className="space-y-4">
-          <div className="flex items-center gap-3">
+        <section className="space-y-3">
+          <div className="flex items-center gap-2">
             <div className="h-2 w-2 rounded-full bg-destructive animate-pulse" />
-            <h2 className="text-lg font-semibold text-foreground">Live Camera Feed</h2>
+            <h2 className="text-sm font-medium text-foreground">Live Feed</h2>
           </div>
-          <div className="glass-card overflow-hidden">
-            <CameraFeed streamUrl={deviceSettings.cameraUrl} />
-          </div>
+          <CameraFeed streamUrl={deviceSettings.cameraUrl} />
         </section>
 
         {/* Sensor Data Section */}
