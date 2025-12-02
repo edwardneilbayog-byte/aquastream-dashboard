@@ -5,11 +5,12 @@ import SensorCard from "@/components/SensorCard";
 import ControlButton from "@/components/ControlButton";
 import SettingsDialog from "@/components/SettingsDialog";
 import { AutomationHistory } from "@/components/AutomationHistory";
+import { SensorHistory } from "@/components/SensorHistory";
 import { useESP32Control } from "@/hooks/useESP32Control";
 import { useAutomationSettings } from "@/hooks/useAutomationSettings";
 import { useDeviceSettings } from "@/hooks/useDeviceSettings";
 import { Button } from "@/components/ui/button";
-import { Thermometer, Droplets, Waves, Fish, Droplet, History } from "lucide-react";
+import { Thermometer, Droplets, Waves, Fish, Droplet, History, BarChart3 } from "lucide-react";
 
 const Index = () => {
   const { sensorData, activateFeeder, deactivateFeeder, activatePump, deactivatePump, fetchSensorData, lastAutoActivation } = useESP32Control();
@@ -17,6 +18,7 @@ const Index = () => {
   const { settings: deviceSettings } = useDeviceSettings();
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false);
+  const [sensorHistoryOpen, setSensorHistoryOpen] = useState(false);
   
   const cooldownMs = settings.cooldownPeriod * 60 * 1000;
   const timeSinceLastActivation = Date.now() - lastAutoActivation;
@@ -59,15 +61,26 @@ const Index = () => {
               </div>
               Water Parameters
             </h2>
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={() => setHistoryOpen(true)}
-              className="rounded-full"
-            >
-              <History className="h-4 w-4 mr-2" />
-              History
-            </Button>
+            <div className="flex gap-2">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => setSensorHistoryOpen(true)}
+                className="rounded-full"
+              >
+                <BarChart3 className="h-4 w-4 mr-2" />
+                Sensor Log
+              </Button>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => setHistoryOpen(true)}
+                className="rounded-full"
+              >
+                <History className="h-4 w-4 mr-2" />
+                Actions
+              </Button>
+            </div>
           </div>
           
           {/* pH Automation Notice */}
@@ -157,6 +170,7 @@ const Index = () => {
 
       <SettingsDialog open={settingsOpen} onOpenChange={setSettingsOpen} />
       <AutomationHistory open={historyOpen} onOpenChange={setHistoryOpen} />
+      <SensorHistory open={sensorHistoryOpen} onOpenChange={setSensorHistoryOpen} />
     </div>
   );
 };
