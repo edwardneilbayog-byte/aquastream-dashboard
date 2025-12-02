@@ -78,20 +78,17 @@ export const useESP32Control = () => {
   }, [sendCommand, addEvent]);
 
   const activatePump = useCallback(() => {
-    const duration = settings.pumpDuration;
     sendCommand('pump', true);
     addEvent({ 
       type: 'manual_pump_on', 
-      duration,
       ph: sensorData.ph 
     });
-    
-    // Auto turn off after configured duration
-    setTimeout(() => {
-      sendCommand('pump', false);
-      addEvent({ type: 'manual_pump_off' });
-    }, duration * 1000);
-  }, [sendCommand, addEvent, settings.pumpDuration, sensorData.ph]);
+  }, [sendCommand, addEvent, sensorData.ph]);
+
+  const deactivatePump = useCallback(() => {
+    sendCommand('pump', false);
+    addEvent({ type: 'manual_pump_off' });
+  }, [sendCommand, addEvent]);
 
   const fetchSensorData = useCallback(async () => {
     try {
@@ -166,6 +163,7 @@ export const useESP32Control = () => {
     activateFeeder,
     deactivateFeeder,
     activatePump,
+    deactivatePump,
     fetchSensorData,
     lastAutoActivation
   };
