@@ -51,15 +51,15 @@ const CameraFeed = ({ streamUrl = "http://192.168.1.151" }: CameraFeedProps) => 
   // Fullscreen modal
   if (isFullscreen) {
     return (
-      <div className="fixed inset-0 z-50 bg-black/95 flex items-center justify-center" onClick={closeFullscreen}>
+      <div className="fixed inset-0 z-[100] bg-black/95 flex items-center justify-center" onClick={closeFullscreen}>
         <button
-          onClick={closeFullscreen}
-          className="absolute top-4 right-4 p-3 rounded-full bg-white/10 hover:bg-white/20 transition-colors z-10"
+          onClick={(e) => { e.stopPropagation(); closeFullscreen(); }}
+          className="absolute top-20 right-6 p-3 rounded-full bg-white/20 hover:bg-white/30 transition-colors z-[101]"
           aria-label="Close fullscreen (ESC)"
         >
           <X className="h-6 w-6 text-white" />
         </button>
-        <p className="absolute top-5 right-16 text-white/50 text-xs">Press ESC to exit</p>
+        <p className="absolute top-[88px] right-20 text-white/60 text-xs">ESC to exit</p>
         <div className="w-full h-full max-w-[90vw] max-h-[90vh] relative">
           <img 
             src={`${streamUrl}/stream`}
