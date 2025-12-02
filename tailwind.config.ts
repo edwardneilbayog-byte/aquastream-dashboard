@@ -63,6 +63,12 @@ export default {
         'gradient-feeder': 'var(--gradient-feeder)',
         'gradient-pump': 'var(--gradient-pump)',
       },
+      backgroundColor: {
+        'glass': 'var(--glass-bg)',
+      },
+      borderColor: {
+        'glass': 'var(--glass-border)',
+      },
       boxShadow: {
         'soft': 'var(--shadow-soft)',
         'elevated': 'var(--shadow-elevated)',

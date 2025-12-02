@@ -24,41 +24,47 @@ const Index = () => {
   const remainingMinutes = Math.ceil((cooldownMs - timeSinceLastActivation) / 60000);
 
   useEffect(() => {
-    // Fetch sensor data on mount
     fetchSensorData();
-    
-    // Poll sensor data every 10 seconds
     const interval = setInterval(fetchSensorData, 10000);
-    
     return () => clearInterval(interval);
   }, [fetchSensorData]);
 
   return (
     <div className="min-h-screen bg-background relative overflow-hidden">
-      {/* Ambient background effects */}
-      <div className="fixed inset-0 bg-aqua-gradient opacity-5 pointer-events-none" />
-      <div className="fixed inset-0 bg-water-shimmer opacity-10 pointer-events-none animate-pulse" style={{ animationDuration: '8s' }} />
+      {/* Background effects */}
+      <div className="fixed inset-0 bg-aqua-gradient opacity-[0.03] pointer-events-none" />
+      <div className="absolute top-20 right-0 w-[500px] h-[500px] bg-primary/5 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-accent/5 rounded-full blur-3xl pointer-events-none" />
       
       <Navigation onSettingsClick={() => setSettingsOpen(true)} />
       
-      <main className="container mx-auto px-4 py-6 space-y-8 relative z-10">
+      <main className="container mx-auto px-4 py-8 space-y-8 relative z-10">
         {/* Camera Feed Section */}
-        <section className="space-y-3">
-          <div className="flex items-center gap-2">
-            <div className="h-1 w-1 rounded-full bg-red-500 animate-pulse" />
+        <section className="space-y-4">
+          <div className="flex items-center gap-3">
+            <div className="h-2 w-2 rounded-full bg-destructive animate-pulse" />
             <h2 className="text-lg font-semibold text-foreground">Live Camera Feed</h2>
           </div>
-          <CameraFeed streamUrl={deviceSettings.cameraUrl} />
+          <div className="glass-card overflow-hidden">
+            <CameraFeed streamUrl={deviceSettings.cameraUrl} />
+          </div>
         </section>
 
         {/* Sensor Data Section */}
-        <section className="space-y-3">
+        <section className="space-y-4">
           <div className="flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
-              <Waves className="h-5 w-5 text-primary" />
+            <h2 className="text-lg font-semibold text-foreground flex items-center gap-3">
+              <div className="p-2 rounded-xl bg-primary/10">
+                <Waves className="h-5 w-5 text-primary" />
+              </div>
               Water Parameters
             </h2>
-            <Button variant="outline" size="sm" onClick={() => setHistoryOpen(true)}>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={() => setHistoryOpen(true)}
+              className="rounded-full"
+            >
               <History className="h-4 w-4 mr-2" />
               History
             </Button>
@@ -66,25 +72,27 @@ const Index = () => {
           
           {/* pH Automation Notice */}
           {settings.enabled && sensorData.ph >= settings.phMin && sensorData.ph <= settings.phMax && (
-            <div className={`border-2 rounded-lg p-4 flex items-start gap-3 ${
+            <div className={`glass-card p-4 flex items-start gap-4 ${
               canAutoActivate 
-                ? 'bg-gradient-pump/10 border-control-pump animate-pulse' 
-                : 'bg-muted/50 border-muted-foreground/30'
+                ? 'border-primary/50' 
+                : 'border-muted'
             }`}>
-              <Droplet className={`h-5 w-5 mt-0.5 flex-shrink-0 ${
-                canAutoActivate ? 'text-control-pump' : 'text-muted-foreground'
-              }`} />
+              <div className={`p-2 rounded-xl ${canAutoActivate ? 'bg-primary/10' : 'bg-muted'}`}>
+                <Droplet className={`h-5 w-5 ${
+                  canAutoActivate ? 'text-primary' : 'text-muted-foreground'
+                }`} />
+              </div>
               <div className="flex-1">
                 <h3 className={`font-semibold ${
-                  canAutoActivate ? 'text-control-pump' : 'text-muted-foreground'
+                  canAutoActivate ? 'text-foreground' : 'text-muted-foreground'
                 }`}>
                   {canAutoActivate ? 'pH Automation Ready' : 'pH Automation Cooldown'}
                 </h3>
                 <p className="text-sm text-muted-foreground mt-1">
                   {canAutoActivate ? (
-                    <>pH level is {sensorData.ph.toFixed(2)} (target: {settings.phMin}-{settings.phMax}). Water pump will auto-activate for {settings.pumpDuration} seconds to adjust water quality.</>
+                    <>pH level is {sensorData.ph.toFixed(2)} (target: {settings.phMin}-{settings.phMax}). Water pump will auto-activate to adjust water quality.</>
                   ) : (
-                    <>pH level is {sensorData.ph.toFixed(2)} but automation is on cooldown. Next auto-activation available in {remainingMinutes} minute{remainingMinutes !== 1 ? 's' : ''}. Manual control still available.</>
+                    <>pH level is {sensorData.ph.toFixed(2)} but automation is on cooldown. Next auto-activation available in {remainingMinutes} minute{remainingMinutes !== 1 ? 's' : ''}.</>
                   )}
                 </p>
               </div>
@@ -117,12 +125,14 @@ const Index = () => {
         </section>
 
         {/* Control Section */}
-        <section className="space-y-3">
-          <h2 className="text-lg font-semibold text-foreground flex items-center gap-2">
-            <Fish className="h-5 w-5 text-control-feeder" />
+        <section className="space-y-4">
+          <h2 className="text-lg font-semibold text-foreground flex items-center gap-3">
+            <div className="p-2 rounded-xl bg-control-feeder/10">
+              <Fish className="h-5 w-5 text-control-feeder" />
+            </div>
             Aquarium Controls
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <ControlButton
               title="Fish Feeder"
               icon={Fish}
@@ -145,7 +155,6 @@ const Index = () => {
         </section>
       </main>
 
-      {/* Settings & History Modals */}
       <SettingsDialog open={settingsOpen} onOpenChange={setSettingsOpen} />
       <AutomationHistory open={historyOpen} onOpenChange={setHistoryOpen} />
     </div>
