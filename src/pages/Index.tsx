@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Thermometer, Droplets, Waves, Fish, Droplet, History } from "lucide-react";
 
 const Index = () => {
-  const { sensorData, activateFeeder, deactivateFeeder, activatePump, fetchSensorData, lastAutoActivation } = useESP32Control();
+  const { sensorData, activateFeeder, deactivateFeeder, activatePump, deactivatePump, fetchSensorData, lastAutoActivation } = useESP32Control();
   const { settings } = useAutomationSettings();
   const { settings: deviceSettings } = useDeviceSettings();
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -138,10 +138,8 @@ const Index = () => {
               icon={Droplet}
               colorClass="text-white"
               bgColorClass="bg-gradient-pump shadow-glow-pump"
-              onClick={activatePump}
+              onClick={sensorData.pump ? deactivatePump : activatePump}
               isActive={sensorData.pump}
-              showCountdown={true}
-              countdownDuration={settings.pumpDuration}
             />
           </div>
         </section>
