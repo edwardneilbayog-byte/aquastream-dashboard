@@ -53,7 +53,7 @@ const CameraFeed = ({ streamUrl = "http://192.168.1.151" }: CameraFeedProps) => 
 
   return (
     <Card className="overflow-hidden shadow-elevated glass-card">
-      <div className="relative aspect-[21/9] max-h-[200px] bg-muted m-2 rounded-lg overflow-hidden">
+      <div className="relative aspect-video max-h-[280px] bg-muted rounded-lg overflow-hidden">
         <img 
           src={`${streamUrl}/stream`}
           alt="Aquarium Live Feed"
