@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Card } from "@/components/ui/card";
-import { Camera, Maximize2, Minimize2, X } from "lucide-react";
+import { Camera, Maximize2, X } from "lucide-react";
 
 interface CameraFeedProps {
   streamUrl?: string;
@@ -21,20 +21,45 @@ const CameraFeed = ({ streamUrl = "http://192.168.1.151" }: CameraFeedProps) => 
     setHasError(true);
   };
 
-  const toggleFullscreen = () => {
-    setIsFullscreen(!isFullscreen);
+  const closeFullscreen = useCallback(() => {
+    setIsFullscreen(false);
+  }, []);
+
+  const openFullscreen = () => {
+    setIsFullscreen(true);
   };
+
+  // ESC key listener
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && isFullscreen) {
+        closeFullscreen();
+      }
+    };
+
+    if (isFullscreen) {
+      document.addEventListener("keydown", handleKeyDown);
+      document.body.style.overflow = "hidden";
+    }
+
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+      document.body.style.overflow = "";
+    };
+  }, [isFullscreen, closeFullscreen]);
 
   // Fullscreen modal
   if (isFullscreen) {
     return (
-      <div className="fixed inset-0 z-50 bg-black/95 flex items-center justify-center">
+      <div className="fixed inset-0 z-50 bg-black/95 flex items-center justify-center" onClick={closeFullscreen}>
         <button
-          onClick={toggleFullscreen}
-          className="absolute top-4 right-4 p-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors"
+          onClick={closeFullscreen}
+          className="absolute top-4 right-4 p-3 rounded-full bg-white/10 hover:bg-white/20 transition-colors z-10"
+          aria-label="Close fullscreen (ESC)"
         >
           <X className="h-6 w-6 text-white" />
         </button>
+        <p className="absolute top-5 right-16 text-white/50 text-xs">Press ESC to exit</p>
         <div className="w-full h-full max-w-[90vw] max-h-[90vh] relative">
           <img 
             src={`${streamUrl}/stream`}
@@ -60,7 +85,7 @@ const CameraFeed = ({ streamUrl = "http://192.168.1.151" }: CameraFeedProps) => 
           className="h-full w-full object-cover cursor-pointer"
           onLoad={handleImageLoad}
           onError={handleImageError}
-          onClick={toggleFullscreen}
+          onClick={openFullscreen}
         />
         
         {/* Placeholder overlay - only show when loading or error */}
@@ -85,8 +110,9 @@ const CameraFeed = ({ streamUrl = "http://192.168.1.151" }: CameraFeedProps) => 
 
         {/* Fullscreen button */}
         <button
-          onClick={toggleFullscreen}
+          onClick={openFullscreen}
           className="absolute bottom-2 right-2 p-1.5 rounded-lg bg-background/80 backdrop-blur-sm border border-border/50 hover:bg-background transition-colors"
+          aria-label="Open fullscreen"
         >
           <Maximize2 className="h-4 w-4 text-foreground" />
         </button>
