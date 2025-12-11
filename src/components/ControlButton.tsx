@@ -37,15 +37,17 @@ const ControlButton = ({
   };
 
   const handleMouseUp = () => {
-    if (!isTactSwitch) {
-      setIsPressed(false);
-    }
-  };
-
-  const handleRelease = () => {
-    if (isTactSwitch && onRelease) {
+    if (isTactSwitch && onRelease && isPressed) {
       onRelease();
     }
+    setIsPressed(false);
+  };
+
+  const handleMouseLeave = () => {
+    if (isTactSwitch && onRelease && isPressed) {
+      onRelease();
+    }
+    setIsPressed(false);
   };
 
   return (
@@ -61,7 +63,7 @@ const ControlButton = ({
       onClick={handleClick}
       onMouseDown={handleMouseDown}
       onMouseUp={handleMouseUp}
-      onMouseLeave={handleRelease}
+      onMouseLeave={handleMouseLeave}
       onTouchStart={handleMouseDown}
       onTouchEnd={handleMouseUp}
     >
