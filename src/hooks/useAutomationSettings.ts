@@ -1,18 +1,31 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 
 export interface AutomationSettings {
   enabled: boolean;
+  // pH thresholds (trigger water change when outside safe range)
   phMin: number;
   phMax: number;
-  pumpDuration: number; // in seconds
-  cooldownPeriod: number; // in minutes
+  // Temperature thresholds (safe range for fish)
+  tempMin: number;
+  tempMax: number;
+  // TDS thresholds (safe range for fish)
+  tdsMin: number;
+  tdsMax: number;
+  // Water change duration in seconds
+  waterChangeDuration: number;
+  // Cooldown period in minutes
+  cooldownPeriod: number;
 }
 
 const DEFAULT_SETTINGS: AutomationSettings = {
   enabled: true,
-  phMin: 5.0,
-  phMax: 6.0,
-  pumpDuration: 30,
+  phMin: 6.5,
+  phMax: 7.5,
+  tempMin: 24,
+  tempMax: 28,
+  tdsMin: 150,
+  tdsMax: 400,
+  waterChangeDuration: 60, // 1 minute
   cooldownPeriod: 60, // 1 hour
 };
 
@@ -21,7 +34,11 @@ const STORAGE_KEY = 'aquastream_automation_settings';
 export const useAutomationSettings = () => {
   const [settings, setSettings] = useState<AutomationSettings>(() => {
     const stored = localStorage.getItem(STORAGE_KEY);
-    return stored ? JSON.parse(stored) : DEFAULT_SETTINGS;
+    if (stored) {
+      // Merge with defaults to handle new fields
+      return { ...DEFAULT_SETTINGS, ...JSON.parse(stored) };
+    }
+    return DEFAULT_SETTINGS;
   });
 
   const updateSettings = (newSettings: Partial<AutomationSettings>) => {
@@ -37,5 +54,5 @@ export const useAutomationSettings = () => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(DEFAULT_SETTINGS));
   };
 
-  return { settings, updateSettings, resetSettings };
+  return { settings, updateSettings, resetSettings, DEFAULT_SETTINGS };
 };

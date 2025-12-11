@@ -1,11 +1,25 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 
 export interface HistoryEvent {
   id: string;
   timestamp: number;
-  type: 'auto_pump' | 'manual_pump_on' | 'manual_pump_off' | 'manual_feeder_on' | 'manual_feeder_off';
+  type: 
+    | 'auto_water_change'
+    | 'manual_pump_in_on' 
+    | 'manual_pump_in_off'
+    | 'manual_pump_out_on'
+    | 'manual_pump_out_off'
+    | 'manual_master_pump_on'
+    | 'manual_master_pump_off'
+    | 'manual_feeder_on' 
+    | 'manual_feeder_off'
+    | 'leak_detected'
+    | 'leak_cleared';
   ph?: number;
-  duration?: number; // in seconds
+  temp?: number;
+  tds?: number;
+  duration?: number;
+  trigger?: 'ph' | 'temp' | 'tds';
 }
 
 const STORAGE_KEY = 'aquastream_automation_history';

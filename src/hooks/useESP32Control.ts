@@ -9,8 +9,10 @@ interface SensorData {
   temp: number;
   ph: number;
   tds: number;
-  pump: boolean;
+  pumpIn: boolean;
+  pumpOut: boolean;
   feeder: boolean;
+  leak: boolean;
 }
 
 export const useESP32Control = () => {
@@ -20,13 +22,16 @@ export const useESP32Control = () => {
   const { settings: deviceSettings } = useDeviceSettings();
   const { addReading } = useSensorHistory();
   const lastReadingRef = useRef<number>(0);
+  const lastLeakStateRef = useRef<boolean>(false);
   
   const [sensorData, setSensorData] = useState<SensorData>({
     temp: 0,
     ph: 0,
     tds: 0,
-    pump: false,
-    feeder: false
+    pumpIn: false,
+    pumpOut: false,
+    feeder: false,
+    leak: false
   });
   const [isLoading, setIsLoading] = useState(false);
   const [lastAutoActivation, setLastAutoActivation] = useState<number>(0);
@@ -49,19 +54,27 @@ export const useESP32Control = () => {
 
       toast({
         title: "Command sent",
-        description: `${command} ${value ? 'activated' : 'deactivated'}`,
+        description: `${command.replace('_', ' ')} ${value ? 'activated' : 'deactivated'}`,
       });
 
-      // Update local state
-      setSensorData(prev => ({
-        ...prev,
-        [command]: value
-      }));
+      // Update local state based on command
+      setSensorData(prev => {
+        if (command === 'master_pump') {
+          return { ...prev, pumpIn: value, pumpOut: value };
+        } else if (command === 'pump_in') {
+          return { ...prev, pumpIn: value };
+        } else if (command === 'pump_out') {
+          return { ...prev, pumpOut: value };
+        } else if (command === 'feeder') {
+          return { ...prev, feeder: value };
+        }
+        return prev;
+      });
 
     } catch (error) {
       toast({
         title: "Error",
-        description: `Failed to control ${command}. Check ESP32 connection.`,
+        description: `Failed to control ${command.replace('_', ' ')}. Check ESP32 connection.`,
         variant: "destructive",
       });
       console.error('Control error:', error);
@@ -70,6 +83,7 @@ export const useESP32Control = () => {
     }
   }, [toast, deviceSettings.esp32Url]);
 
+  // Feeder controls
   const activateFeeder = useCallback(() => {
     sendCommand('feeder', true);
     addEvent({ type: 'manual_feeder_on' });
@@ -80,17 +94,37 @@ export const useESP32Control = () => {
     addEvent({ type: 'manual_feeder_off' });
   }, [sendCommand, addEvent]);
 
-  const activatePump = useCallback(() => {
-    sendCommand('pump', true);
-    addEvent({ 
-      type: 'manual_pump_on', 
-      ph: sensorData.ph 
-    });
-  }, [sendCommand, addEvent, sensorData.ph]);
+  // Pump In controls
+  const activatePumpIn = useCallback(() => {
+    sendCommand('pump_in', true);
+    addEvent({ type: 'manual_pump_in_on' });
+  }, [sendCommand, addEvent]);
 
-  const deactivatePump = useCallback(() => {
-    sendCommand('pump', false);
-    addEvent({ type: 'manual_pump_off' });
+  const deactivatePumpIn = useCallback(() => {
+    sendCommand('pump_in', false);
+    addEvent({ type: 'manual_pump_in_off' });
+  }, [sendCommand, addEvent]);
+
+  // Pump Out controls
+  const activatePumpOut = useCallback(() => {
+    sendCommand('pump_out', true);
+    addEvent({ type: 'manual_pump_out_on' });
+  }, [sendCommand, addEvent]);
+
+  const deactivatePumpOut = useCallback(() => {
+    sendCommand('pump_out', false);
+    addEvent({ type: 'manual_pump_out_off' });
+  }, [sendCommand, addEvent]);
+
+  // Master Pump controls (both pumps)
+  const activateMasterPump = useCallback(() => {
+    sendCommand('master_pump', true);
+    addEvent({ type: 'manual_master_pump_on' });
+  }, [sendCommand, addEvent]);
+
+  const deactivateMasterPump = useCallback(() => {
+    sendCommand('master_pump', false);
+    addEvent({ type: 'manual_master_pump_off' });
   }, [sendCommand, addEvent]);
 
   const fetchSensorData = useCallback(async () => {
@@ -104,60 +138,93 @@ export const useESP32Control = () => {
         const newTemp = parseFloat(data.temp) || 0;
         const newPh = parseFloat(data.ph) || 0;
         const newTds = parseFloat(data.tds) || 0;
-        const newPumpState = data.pump === '1';
+        const newPumpIn = data.pump_in === '1';
+        const newPumpOut = data.pump_out === '1';
+        const newLeak = data.leak === '1';
         const currentTime = Date.now();
         
-        // Add to sensor history (limit to once per 30 seconds to avoid spam)
+        // Add to sensor history (limit to once per 30 seconds)
         if (currentTime - lastReadingRef.current >= 30000) {
           lastReadingRef.current = currentTime;
           addReading({ temp: newTemp, ph: newPh, tds: newTds });
         }
+
+        // Check for leak state change
+        if (newLeak !== lastLeakStateRef.current) {
+          lastLeakStateRef.current = newLeak;
+          if (newLeak) {
+            addEvent({ type: 'leak_detected' });
+          } else {
+            addEvent({ type: 'leak_cleared' });
+          }
+        }
         
         setSensorData(prev => {
-          const updated = {
+          const updated: SensorData = {
             temp: newTemp,
             ph: newPh,
             tds: newTds,
-            pump: newPumpState,
-            feeder: data.feeder === '1'
+            pumpIn: newPumpIn,
+            pumpOut: newPumpOut,
+            feeder: data.feeder === '1',
+            leak: newLeak
           };
           
-          // pH Automation: Turn on pump based on configured settings
+          // Smart Water Change Automation
           const timeSinceLastActivation = currentTime - lastAutoActivation;
           const cooldownMs = settings.cooldownPeriod * 60 * 1000;
           const canAutoActivate = timeSinceLastActivation >= cooldownMs || lastAutoActivation === 0;
           
-          if (
+          // Check if any sensor is out of safe range
+          const tempOutOfRange = newTemp < settings.tempMin || newTemp > settings.tempMax;
+          const phOutOfRange = newPh < settings.phMin || newPh > settings.phMax;
+          const tdsOutOfRange = newTds < settings.tdsMin || newTds > settings.tdsMax;
+          
+          // Determine trigger reason
+          let trigger: 'ph' | 'temp' | 'tds' | undefined;
+          if (tempOutOfRange) trigger = 'temp';
+          else if (phOutOfRange) trigger = 'ph';
+          else if (tdsOutOfRange) trigger = 'tds';
+          
+          const shouldTriggerWaterChange = 
             settings.enabled &&
-            newPh >= settings.phMin && 
-            newPh <= settings.phMax && 
-            !newPumpState && 
-            !prev.pump && 
-            canAutoActivate
-          ) {
-            console.log(`pH Automation triggered: pH ${newPh} detected, activating pump`);
+            (tempOutOfRange || phOutOfRange || tdsOutOfRange) &&
+            !newPumpIn && 
+            !newPumpOut && 
+            !prev.pumpIn &&
+            !prev.pumpOut &&
+            canAutoActivate;
+          
+          if (shouldTriggerWaterChange && trigger) {
+            console.log(`Water Change Automation triggered: ${trigger} out of range`);
             setLastAutoActivation(currentTime);
-            sendCommand('pump', true);
+            sendCommand('master_pump', true);
             
-            // Log auto activation
+            // Log auto water change event
             addEvent({ 
-              type: 'auto_pump', 
-              ph: newPh, 
-              duration: settings.pumpDuration 
+              type: 'auto_water_change', 
+              ph: newPh,
+              temp: newTemp,
+              tds: newTds,
+              duration: settings.waterChangeDuration,
+              trigger
             });
             
             // Auto turn off after configured duration
             setTimeout(() => {
-              sendCommand('pump', false);
-            }, settings.pumpDuration * 1000);
+              sendCommand('master_pump', false);
+            }, settings.waterChangeDuration * 1000);
+            
+            const triggerMessage = trigger === 'temp' 
+              ? `Temperature ${newTemp.toFixed(1)}°C out of safe range (${settings.tempMin}-${settings.tempMax}°C)`
+              : trigger === 'ph'
+              ? `pH ${newPh.toFixed(2)} out of safe range (${settings.phMin}-${settings.phMax})`
+              : `TDS ${newTds} ppm out of safe range (${settings.tdsMin}-${settings.tdsMax} ppm)`;
             
             toast({
-              title: "pH Automation Activated",
-              description: `pH level ${newPh.toFixed(2)} detected. Water pump activated for ${settings.pumpDuration} seconds.`,
+              title: "Water Change Activated",
+              description: `${triggerMessage}. Both pumps running for ${settings.waterChangeDuration} seconds.`,
             });
-          } else if (newPh >= settings.phMin && newPh <= settings.phMax && !canAutoActivate) {
-            const remainingTime = Math.ceil((cooldownMs - timeSinceLastActivation) / 60000);
-            console.log(`pH Automation on cooldown. ${remainingTime} minutes remaining.`);
           }
           
           return updated;
@@ -173,8 +240,12 @@ export const useESP32Control = () => {
     isLoading,
     activateFeeder,
     deactivateFeeder,
-    activatePump,
-    deactivatePump,
+    activatePumpIn,
+    deactivatePumpIn,
+    activatePumpOut,
+    deactivatePumpOut,
+    activateMasterPump,
+    deactivateMasterPump,
     fetchSensorData,
     lastAutoActivation
   };
