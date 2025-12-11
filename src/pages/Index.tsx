@@ -12,6 +12,7 @@ import { useAutomationSettings } from "@/hooks/useAutomationSettings";
 import { useDeviceSettings } from "@/hooks/useDeviceSettings";
 import { Button } from "@/components/ui/button";
 import { Thermometer, Droplets, Waves, Fish, Droplet, History, BarChart3, ArrowDownToLine, ArrowUpFromLine, Power } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 const Index = () => {
   const { 
@@ -169,64 +170,151 @@ const Index = () => {
         </section>
 
         {/* Control Section */}
-        <section className="space-y-4">
+        <section className="space-y-6">
           <h2 className="text-lg font-semibold text-foreground flex items-center gap-3">
-            <div className="p-2 rounded-xl bg-control-feeder/10">
-              <Fish className="h-5 w-5 text-control-feeder" />
+            <div className="p-2 rounded-xl bg-primary/10">
+              <Power className="h-5 w-5 text-primary" />
             </div>
-            Aquarium Controls
+            Device Controls
           </h2>
           
-          {/* Feeder */}
-          <div className="grid grid-cols-1 gap-4">
-            <ControlButton
-              title="Fish Feeder"
-              icon={Fish}
-              colorClass="text-white"
-              bgColorClass="bg-gradient-feeder shadow-glow-feeder"
-              onClick={activateFeeder}
-              onRelease={deactivateFeeder}
-              isActive={sensorData.feeder}
-              isTactSwitch={true}
-            />
-          </div>
-          
-          {/* Pump Controls */}
-          <div className="space-y-3">
-            <h3 className="text-sm font-medium text-muted-foreground flex items-center gap-2">
-              <Droplet className="h-4 w-4" />
-              Water Pump Controls
-            </h3>
+          {/* Control Cards Grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             
-            {/* Individual Pumps */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Feeding Card */}
+            <div className="glass-card p-6 space-y-4">
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 rounded-xl bg-control-feeder/15">
+                  <Fish className="h-5 w-5 text-control-feeder" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-foreground">Fish Feeder</h3>
+                  <p className="text-xs text-muted-foreground">Press and hold to dispense food</p>
+                </div>
+              </div>
               <ControlButton
-                title="Pump In (Fresh Water)"
-                icon={ArrowDownToLine}
+                title="Feed Now"
+                icon={Fish}
                 colorClass="text-white"
-                bgColorClass="bg-gradient-to-br from-blue-500 to-cyan-600 shadow-[0_4px_20px_-4px_rgba(59,130,246,0.5)]"
-                onClick={sensorData.pumpIn ? deactivatePumpIn : activatePumpIn}
-                isActive={sensorData.pumpIn}
-              />
-              <ControlButton
-                title="Pump Out (Drain)"
-                icon={ArrowUpFromLine}
-                colorClass="text-white"
-                bgColorClass="bg-gradient-to-br from-orange-500 to-amber-600 shadow-[0_4px_20px_-4px_rgba(249,115,22,0.5)]"
-                onClick={sensorData.pumpOut ? deactivatePumpOut : activatePumpOut}
-                isActive={sensorData.pumpOut}
+                bgColorClass="bg-gradient-feeder shadow-glow-feeder"
+                onClick={activateFeeder}
+                onRelease={deactivateFeeder}
+                isActive={sensorData.feeder}
+                isTactSwitch={true}
               />
             </div>
             
-            {/* Master Pump Control */}
-            <ControlButton
-              title="Master Control (Both Pumps)"
-              icon={Power}
-              colorClass="text-white"
-              bgColorClass="bg-gradient-pump shadow-glow-pump"
-              onClick={(sensorData.pumpIn && sensorData.pumpOut) ? deactivateMasterPump : activateMasterPump}
-              isActive={sensorData.pumpIn && sensorData.pumpOut}
-            />
+            {/* Water Exchange Card */}
+            <div className="glass-card p-6 space-y-4">
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 rounded-xl bg-primary/15">
+                  <Droplet className="h-5 w-5 text-primary" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-foreground">Water Exchange</h3>
+                  <p className="text-xs text-muted-foreground">Simultaneous inlet & outlet control</p>
+                </div>
+              </div>
+              <ControlButton
+                title="Start Exchange"
+                icon={Waves}
+                colorClass="text-white"
+                bgColorClass="bg-gradient-pump shadow-glow-pump"
+                onClick={(sensorData.pumpIn && sensorData.pumpOut) ? deactivateMasterPump : activateMasterPump}
+                isActive={sensorData.pumpIn && sensorData.pumpOut}
+              />
+            </div>
+          </div>
+          
+          {/* Individual Pump Controls */}
+          <div className="glass-card p-6 space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 rounded-xl bg-secondary">
+                  <Waves className="h-5 w-5 text-muted-foreground" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-foreground">Individual Pump Controls</h3>
+                  <p className="text-xs text-muted-foreground">Manual control for each pump separately</p>
+                </div>
+              </div>
+            </div>
+            
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {/* Pump In */}
+              <button
+                onClick={sensorData.pumpIn ? deactivatePumpIn : activatePumpIn}
+                className={cn(
+                  "relative p-5 rounded-2xl transition-all duration-300 overflow-hidden group",
+                  "flex items-center gap-4 border-2",
+                  sensorData.pumpIn 
+                    ? "bg-gradient-to-br from-blue-500 to-cyan-600 border-blue-400 shadow-[0_4px_20px_-4px_rgba(59,130,246,0.5)]" 
+                    : "bg-card border-border hover:border-blue-300 hover:shadow-md"
+                )}
+              >
+                <div className={cn(
+                  "p-3 rounded-xl transition-colors",
+                  sensorData.pumpIn ? "bg-white/20" : "bg-blue-500/10"
+                )}>
+                  <ArrowDownToLine className={cn(
+                    "h-6 w-6",
+                    sensorData.pumpIn ? "text-white" : "text-blue-500"
+                  )} />
+                </div>
+                <div className="flex-1 text-left">
+                  <p className={cn(
+                    "font-semibold",
+                    sensorData.pumpIn ? "text-white" : "text-foreground"
+                  )}>Fresh Water Inlet</p>
+                  <p className={cn(
+                    "text-xs",
+                    sensorData.pumpIn ? "text-white/70" : "text-muted-foreground"
+                  )}>
+                    {sensorData.pumpIn ? "Running..." : "Tap to activate"}
+                  </p>
+                </div>
+                {sensorData.pumpIn && (
+                  <div className="h-3 w-3 rounded-full bg-white animate-pulse" />
+                )}
+              </button>
+              
+              {/* Pump Out */}
+              <button
+                onClick={sensorData.pumpOut ? deactivatePumpOut : activatePumpOut}
+                className={cn(
+                  "relative p-5 rounded-2xl transition-all duration-300 overflow-hidden group",
+                  "flex items-center gap-4 border-2",
+                  sensorData.pumpOut 
+                    ? "bg-gradient-to-br from-orange-500 to-amber-600 border-orange-400 shadow-[0_4px_20px_-4px_rgba(249,115,22,0.5)]" 
+                    : "bg-card border-border hover:border-orange-300 hover:shadow-md"
+                )}
+              >
+                <div className={cn(
+                  "p-3 rounded-xl transition-colors",
+                  sensorData.pumpOut ? "bg-white/20" : "bg-orange-500/10"
+                )}>
+                  <ArrowUpFromLine className={cn(
+                    "h-6 w-6",
+                    sensorData.pumpOut ? "text-white" : "text-orange-500"
+                  )} />
+                </div>
+                <div className="flex-1 text-left">
+                  <p className={cn(
+                    "font-semibold",
+                    sensorData.pumpOut ? "text-white" : "text-foreground"
+                  )}>Drain Outlet</p>
+                  <p className={cn(
+                    "text-xs",
+                    sensorData.pumpOut ? "text-white/70" : "text-muted-foreground"
+                  )}>
+                    {sensorData.pumpOut ? "Running..." : "Tap to activate"}
+                  </p>
+                </div>
+                {sensorData.pumpOut && (
+                  <div className="h-3 w-3 rounded-full bg-white animate-pulse" />
+                )}
+              </button>
+            </div>
           </div>
         </section>
       </main>
