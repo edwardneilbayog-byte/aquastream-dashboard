@@ -1,9 +1,26 @@
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { useAutomationHistory, HistoryEvent } from '@/hooks/useAutomationHistory';
-import { History, Droplet, Fish, Zap, Trash2 } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { useAutomationHistory, HistoryEvent } from "@/hooks/useAutomationHistory";
+import { useToast } from "@/hooks/use-toast";
+import { 
+  Droplet, 
+  Fish, 
+  Trash2, 
+  ArrowDownToLine, 
+  ArrowUpFromLine, 
+  Power, 
+  RefreshCw,
+  AlertTriangle,
+  CheckCircle,
+  History
+} from "lucide-react";
 
 interface AutomationHistoryProps {
   open: boolean;
@@ -12,30 +29,67 @@ interface AutomationHistoryProps {
 
 const getEventIcon = (type: HistoryEvent['type']) => {
   switch (type) {
-    case 'auto_pump':
-      return <Zap className="h-4 w-4 text-control-pump" />;
-    case 'manual_pump_on':
-    case 'manual_pump_off':
-      return <Droplet className="h-4 w-4 text-control-pump" />;
+    case 'auto_water_change':
+      return RefreshCw;
+    case 'manual_pump_in_on':
+    case 'manual_pump_in_off':
+      return ArrowDownToLine;
+    case 'manual_pump_out_on':
+    case 'manual_pump_out_off':
+      return ArrowUpFromLine;
+    case 'manual_master_pump_on':
+    case 'manual_master_pump_off':
+      return Power;
     case 'manual_feeder_on':
     case 'manual_feeder_off':
-      return <Fish className="h-4 w-4 text-control-feeder" />;
+      return Fish;
+    case 'leak_detected':
+      return AlertTriangle;
+    case 'leak_cleared':
+      return CheckCircle;
+    default:
+      return Droplet;
   }
 };
 
 const getEventLabel = (type: HistoryEvent['type']) => {
   switch (type) {
-    case 'auto_pump':
-      return 'Auto Pump Activation';
-    case 'manual_pump_on':
-      return 'Pump Activated';
-    case 'manual_pump_off':
-      return 'Pump Deactivated';
+    case 'auto_water_change':
+      return 'Auto Water Change';
+    case 'manual_pump_in_on':
+      return 'Pump In ON';
+    case 'manual_pump_in_off':
+      return 'Pump In OFF';
+    case 'manual_pump_out_on':
+      return 'Pump Out ON';
+    case 'manual_pump_out_off':
+      return 'Pump Out OFF';
+    case 'manual_master_pump_on':
+      return 'Master Pump ON';
+    case 'manual_master_pump_off':
+      return 'Master Pump OFF';
     case 'manual_feeder_on':
-      return 'Feeder Activated';
+      return 'Feeder ON';
     case 'manual_feeder_off':
-      return 'Feeder Deactivated';
+      return 'Feeder OFF';
+    case 'leak_detected':
+      return 'Leak Detected!';
+    case 'leak_cleared':
+      return 'Leak Cleared';
+    default:
+      return type;
   }
+};
+
+const getEventColor = (type: HistoryEvent['type']) => {
+  if (type === 'leak_detected') return 'text-destructive';
+  if (type === 'leak_cleared') return 'text-green-500';
+  if (type === 'auto_water_change') return 'text-primary';
+  if (type.includes('pump_in')) return 'text-blue-500';
+  if (type.includes('pump_out')) return 'text-orange-500';
+  if (type.includes('master')) return 'text-purple-500';
+  if (type.includes('feeder')) return 'text-control-feeder';
+  return 'text-muted-foreground';
 };
 
 const formatTimestamp = (timestamp: number) => {
@@ -51,7 +105,7 @@ const formatTimestamp = (timestamp: number) => {
   if (diffHours < 24) return `${diffHours}h ago`;
   if (diffDays < 7) return `${diffDays}d ago`;
   
-  return date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
+  return date.toLocaleDateString() + ' ' + date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 };
 
 export const AutomationHistory = ({ open, onOpenChange }: AutomationHistoryProps) => {
@@ -68,59 +122,71 @@ export const AutomationHistory = ({ open, onOpenChange }: AutomationHistoryProps
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <History className="h-5 w-5 text-primary" />
-            Automation History
+            Action History
           </DialogTitle>
           <DialogDescription>
-            View past automation events and manual controls (last {history.length} events)
+            Recent automation and manual control events
           </DialogDescription>
         </DialogHeader>
-        
+
         <ScrollArea className="h-[400px] pr-4">
           {history.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-12 text-center">
-              <History className="h-12 w-12 text-muted-foreground/50 mb-3" />
-              <p className="text-muted-foreground">No history events yet</p>
-              <p className="text-sm text-muted-foreground/70 mt-1">
-                Events will appear here as automation runs
-              </p>
+            <div className="flex flex-col items-center justify-center h-32 text-muted-foreground">
+              <Droplet className="h-8 w-8 mb-2 opacity-50" />
+              <p className="text-sm">No history events yet</p>
             </div>
           ) : (
             <div className="space-y-3">
-              {history.map((event) => (
-                <div
-                  key={event.id}
-                  className="flex items-start gap-3 p-3 rounded-lg border bg-card hover:bg-accent/50 transition-colors"
-                >
-                  <div className="mt-0.5">{getEventIcon(event.type)}</div>
-                  <div className="flex-1 space-y-1">
-                    <div className="flex items-start justify-between gap-2">
-                      <p className="font-medium text-sm">{getEventLabel(event.type)}</p>
-                      <span className="text-xs text-muted-foreground whitespace-nowrap">
-                        {formatTimestamp(event.timestamp)}
-                      </span>
+              {history.map((event) => {
+                const Icon = getEventIcon(event.type);
+                const colorClass = getEventColor(event.type);
+                return (
+                  <div
+                    key={event.id}
+                    className="flex items-start gap-3 p-3 rounded-lg bg-muted/50"
+                  >
+                    <div className={`p-2 rounded-lg bg-background ${colorClass}`}>
+                      <Icon className="h-4 w-4" />
                     </div>
-                    <div className="text-xs text-muted-foreground space-y-0.5">
-                      {event.ph !== undefined && (
-                        <p>pH Level: {event.ph.toFixed(2)}</p>
-                      )}
-                      {event.duration !== undefined && (
-                        <p>Duration: {event.duration}s</p>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="font-medium text-sm">
+                          {getEventLabel(event.type)}
+                        </span>
+                        <span className="text-xs text-muted-foreground whitespace-nowrap">
+                          {formatTimestamp(event.timestamp)}
+                        </span>
+                      </div>
+                      {(event.ph || event.temp || event.tds || event.duration || event.trigger) && (
+                        <div className="text-xs text-muted-foreground mt-1 space-y-0.5">
+                          {event.trigger && (
+                            <p>Triggered by: {event.trigger.toUpperCase()}</p>
+                          )}
+                          {event.temp && <p>Temp: {event.temp.toFixed(1)}°C</p>}
+                          {event.ph && <p>pH: {event.ph.toFixed(2)}</p>}
+                          {event.tds && <p>TDS: {event.tds} ppm</p>}
+                          {event.duration && <p>Duration: {event.duration}s</p>}
+                        </div>
                       )}
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </ScrollArea>
 
         {history.length > 0 && (
-          <div className="flex justify-end pt-4 border-t">
-            <Button variant="destructive" size="sm" onClick={handleClearHistory}>
+          <div className="flex justify-end pt-2 border-t">
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={handleClearHistory}
+            >
               <Trash2 className="h-4 w-4 mr-2" />
               Clear History
             </Button>

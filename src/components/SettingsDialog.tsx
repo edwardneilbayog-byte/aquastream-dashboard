@@ -13,7 +13,7 @@ import { Switch } from "@/components/ui/switch";
 import { useAutomationSettings } from "@/hooks/useAutomationSettings";
 import { RotateCcw } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import DeviceSettings from "./DeviceSettings";
 
 interface SettingsDialogProps {
@@ -22,9 +22,16 @@ interface SettingsDialogProps {
 }
 
 const SettingsDialog = ({ open, onOpenChange }: SettingsDialogProps) => {
-  const { settings, updateSettings, resetSettings } = useAutomationSettings();
+  const { settings, updateSettings, resetSettings, DEFAULT_SETTINGS } = useAutomationSettings();
   const { toast } = useToast();
   const [localSettings, setLocalSettings] = useState(settings);
+
+  // Sync local settings when dialog opens
+  useEffect(() => {
+    if (open) {
+      setLocalSettings(settings);
+    }
+  }, [open, settings]);
 
   const handleSaveAutomation = () => {
     updateSettings(localSettings);
@@ -36,13 +43,7 @@ const SettingsDialog = ({ open, onOpenChange }: SettingsDialogProps) => {
 
   const handleResetAutomation = () => {
     resetSettings();
-    setLocalSettings({
-      enabled: true,
-      phMin: 5.0,
-      phMax: 6.0,
-      pumpDuration: 30,
-      cooldownPeriod: 60,
-    });
+    setLocalSettings(DEFAULT_SETTINGS);
     toast({
       title: "Settings reset",
       description: "Automation settings have been reset to defaults.",
@@ -55,14 +56,14 @@ const SettingsDialog = ({ open, onOpenChange }: SettingsDialogProps) => {
         <DialogHeader>
           <DialogTitle>Settings</DialogTitle>
           <DialogDescription>
-            Configure device connections and automation parameters
+            Configure device connections and smart water change automation
           </DialogDescription>
         </DialogHeader>
         
         <Tabs defaultValue="device" className="w-full">
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="device">Device Connection</TabsTrigger>
-            <TabsTrigger value="automation">Automation</TabsTrigger>
+            <TabsTrigger value="automation">Water Change Automation</TabsTrigger>
           </TabsList>
           
           <TabsContent value="device" className="space-y-4">
@@ -74,9 +75,9 @@ const SettingsDialog = ({ open, onOpenChange }: SettingsDialogProps) => {
               {/* Enable/Disable Automation */}
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
-                  <Label htmlFor="automation-enabled">Enable pH Automation</Label>
+                  <Label htmlFor="automation-enabled">Enable Smart Water Change</Label>
                   <p className="text-sm text-muted-foreground">
-                    Automatically activate pump when pH is in range
+                    Automatically run both pumps when water parameters are unsafe
                   </p>
                 </div>
                 <Switch
@@ -86,9 +87,63 @@ const SettingsDialog = ({ open, onOpenChange }: SettingsDialogProps) => {
                 />
               </div>
 
+              {/* Water Change Duration */}
+              <div className="space-y-2">
+                <Label htmlFor="water-change-duration">Water Change Duration (seconds)</Label>
+                <Input
+                  id="water-change-duration"
+                  type="number"
+                  min="30"
+                  max="300"
+                  value={localSettings.waterChangeDuration}
+                  onChange={(e) => setLocalSettings(prev => ({ ...prev, waterChangeDuration: parseInt(e.target.value) || 60 }))}
+                />
+                <p className="text-sm text-muted-foreground">
+                  How long both pumps run during automatic water change (30-300 seconds)
+                </p>
+              </div>
+
+              {/* Temperature Range */}
+              <div className="space-y-3">
+                <Label>Safe Temperature Range (°C)</Label>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-2">
+                    <Label htmlFor="temp-min" className="text-sm text-muted-foreground">
+                      Minimum
+                    </Label>
+                    <Input
+                      id="temp-min"
+                      type="number"
+                      step="0.5"
+                      min="15"
+                      max="35"
+                      value={localSettings.tempMin}
+                      onChange={(e) => setLocalSettings(prev => ({ ...prev, tempMin: parseFloat(e.target.value) }))}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="temp-max" className="text-sm text-muted-foreground">
+                      Maximum
+                    </Label>
+                    <Input
+                      id="temp-max"
+                      type="number"
+                      step="0.5"
+                      min="15"
+                      max="35"
+                      value={localSettings.tempMax}
+                      onChange={(e) => setLocalSettings(prev => ({ ...prev, tempMax: parseFloat(e.target.value) }))}
+                    />
+                  </div>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Recommended: 24-28°C for most tropical fish
+                </p>
+              </div>
+
               {/* pH Range */}
               <div className="space-y-3">
-                <Label>pH Threshold Range</Label>
+                <Label>Safe pH Range</Label>
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-2">
                     <Label htmlFor="ph-min" className="text-sm text-muted-foreground">
@@ -119,15 +174,46 @@ const SettingsDialog = ({ open, onOpenChange }: SettingsDialogProps) => {
                     />
                   </div>
                 </div>
+                <p className="text-xs text-muted-foreground">
+                  Recommended: 6.5-7.5 for most freshwater fish
+                </p>
               </div>
 
-              {/* Pump Duration - Fixed */}
-              {/* <div className="space-y-2">
-                <Label>Pump Duration</Label>
-                <div className="flex items-center h-10 px-3 py-2 border border-input bg-muted rounded-md">
-                  <span className="text-sm">30 seconds (calculated duration)</span>
+              {/* TDS Range */}
+              <div className="space-y-3">
+                <Label>Safe TDS Range (ppm)</Label>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="space-y-2">
+                    <Label htmlFor="tds-min" className="text-sm text-muted-foreground">
+                      Minimum
+                    </Label>
+                    <Input
+                      id="tds-min"
+                      type="number"
+                      min="0"
+                      max="1000"
+                      value={localSettings.tdsMin}
+                      onChange={(e) => setLocalSettings(prev => ({ ...prev, tdsMin: parseInt(e.target.value) }))}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="tds-max" className="text-sm text-muted-foreground">
+                      Maximum
+                    </Label>
+                    <Input
+                      id="tds-max"
+                      type="number"
+                      min="0"
+                      max="1000"
+                      value={localSettings.tdsMax}
+                      onChange={(e) => setLocalSettings(prev => ({ ...prev, tdsMax: parseInt(e.target.value) }))}
+                    />
+                  </div>
                 </div>
-              </div> */}
+                <p className="text-xs text-muted-foreground">
+                  Recommended: 150-400 ppm for most freshwater aquariums
+                </p>
+              </div>
 
               {/* Cooldown Period */}
               <div className="space-y-2">
@@ -141,7 +227,7 @@ const SettingsDialog = ({ open, onOpenChange }: SettingsDialogProps) => {
                   onChange={(e) => setLocalSettings(prev => ({ ...prev, cooldownPeriod: parseInt(e.target.value) }))}
                 />
                 <p className="text-sm text-muted-foreground">
-                  Time between automatic activations
+                  Minimum time between automatic water changes
                 </p>
               </div>
 
