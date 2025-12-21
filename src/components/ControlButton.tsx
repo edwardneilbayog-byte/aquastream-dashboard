@@ -26,17 +26,22 @@ const ControlButton = ({
   const [isPressed, setIsPressed] = useState(false);
 
   const handleClick = () => {
-    onClick();
-    if (isTactSwitch) {
-      setTimeout(() => setIsPressed(false), 200);
+    // For tact switch, activation is handled by mouseDown, so skip onClick
+    if (!isTactSwitch) {
+      onClick();
     }
   };
 
   const handleMouseDown = () => {
     setIsPressed(true);
+    // For tact switch, activate on press
+    if (isTactSwitch) {
+      onClick();
+    }
   };
 
   const handleMouseUp = () => {
+    // For tact switch, deactivate on release
     if (isTactSwitch && onRelease && isPressed) {
       onRelease();
     }
@@ -44,6 +49,7 @@ const ControlButton = ({
   };
 
   const handleMouseLeave = () => {
+    // For tact switch, deactivate if user drags away while pressing
     if (isTactSwitch && onRelease && isPressed) {
       onRelease();
     }
