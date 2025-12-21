@@ -7,11 +7,12 @@ import SettingsDialog from "@/components/SettingsDialog";
 import { AutomationHistory } from "@/components/AutomationHistory";
 import { SensorHistory } from "@/components/SensorHistory";
 import { LeakAlert } from "@/components/LeakAlert";
+import { OverflowAlert } from "@/components/OverflowAlert";
 import { useESP32Control } from "@/hooks/useESP32Control";
 import { useAutomationSettings } from "@/hooks/useAutomationSettings";
 import { useDeviceSettings } from "@/hooks/useDeviceSettings";
 import { Button } from "@/components/ui/button";
-import { Thermometer, Droplets, Waves, Fish, Droplet, History, BarChart3, ArrowDownToLine, ArrowUpFromLine, Power } from "lucide-react";
+import { Thermometer, Droplets, Waves, Fish, Droplet, History, BarChart3, ArrowDownToLine, ArrowUpFromLine, Power, ShieldAlert } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const Index = () => {
@@ -60,6 +61,9 @@ const Index = () => {
       
       {/* Leak Alert Overlay */}
       <LeakAlert isLeakDetected={sensorData.leak} />
+      
+      {/* Overflow Alert Overlay */}
+      <OverflowAlert isOverflowDetected={sensorData.overflow} />
       
       <Navigation onSettingsClick={() => setSettingsOpen(true)} />
       
@@ -243,37 +247,56 @@ const Index = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {/* Pump In */}
               <button
-                onClick={sensorData.pumpIn ? deactivatePumpIn : activatePumpIn}
+                onClick={sensorData.overflow ? undefined : (sensorData.pumpIn ? deactivatePumpIn : activatePumpIn)}
+                disabled={sensorData.overflow}
                 className={cn(
                   "relative p-5 rounded-2xl transition-all duration-300 overflow-hidden group",
                   "flex items-center gap-4 border-2",
-                  sensorData.pumpIn 
+                  sensorData.overflow
+                    ? "bg-muted border-amber-500/50 cursor-not-allowed opacity-75"
+                    : sensorData.pumpIn 
                     ? "bg-gradient-to-br from-blue-500 to-cyan-600 border-blue-400 shadow-[0_4px_20px_-4px_rgba(59,130,246,0.5)]" 
                     : "bg-card border-border hover:border-blue-300 hover:shadow-md"
                 )}
               >
+                {/* Overflow indicator overlay */}
+                {sensorData.overflow && (
+                  <div className="absolute top-2 right-2">
+                    <ShieldAlert className="h-4 w-4 text-amber-500" />
+                  </div>
+                )}
                 <div className={cn(
                   "p-3 rounded-xl transition-colors",
-                  sensorData.pumpIn ? "bg-white/20" : "bg-blue-500/10"
+                  sensorData.overflow 
+                    ? "bg-amber-500/10"
+                    : sensorData.pumpIn ? "bg-white/20" : "bg-blue-500/10"
                 )}>
                   <ArrowDownToLine className={cn(
                     "h-6 w-6",
-                    sensorData.pumpIn ? "text-white" : "text-blue-500"
+                    sensorData.overflow 
+                      ? "text-amber-500"
+                      : sensorData.pumpIn ? "text-white" : "text-blue-500"
                   )} />
                 </div>
                 <div className="flex-1 text-left">
                   <p className={cn(
                     "font-semibold",
-                    sensorData.pumpIn ? "text-white" : "text-foreground"
+                    sensorData.overflow
+                      ? "text-amber-500"
+                      : sensorData.pumpIn ? "text-white" : "text-foreground"
                   )}>Fresh Water Inlet</p>
                   <p className={cn(
                     "text-xs",
-                    sensorData.pumpIn ? "text-white/70" : "text-muted-foreground"
+                    sensorData.overflow
+                      ? "text-amber-500/70"
+                      : sensorData.pumpIn ? "text-white/70" : "text-muted-foreground"
                   )}>
-                    {sensorData.pumpIn ? "Running..." : "Tap to activate"}
+                    {sensorData.overflow 
+                      ? "Blocked - Overflow protection" 
+                      : sensorData.pumpIn ? "Running..." : "Tap to activate"}
                   </p>
                 </div>
-                {sensorData.pumpIn && (
+                {sensorData.pumpIn && !sensorData.overflow && (
                   <div className="h-3 w-3 rounded-full bg-white animate-pulse" />
                 )}
               </button>

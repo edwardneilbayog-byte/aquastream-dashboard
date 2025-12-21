@@ -14,7 +14,10 @@ export interface HistoryEvent {
     | 'manual_feeder_on' 
     | 'manual_feeder_off'
     | 'leak_detected'
-    | 'leak_cleared';
+    | 'leak_cleared'
+    | 'overflow_detected'
+    | 'overflow_cleared'
+    | 'overflow_pump_stopped';
   ph?: number;
   temp?: number;
   tds?: number;
