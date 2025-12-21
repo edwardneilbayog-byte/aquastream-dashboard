@@ -13,6 +13,7 @@ interface SensorData {
   pumpOut: boolean;
   feeder: boolean;
   leak: boolean;
+  overflow: boolean;
 }
 
 export const useESP32Control = () => {
@@ -23,6 +24,7 @@ export const useESP32Control = () => {
   const { addReading } = useSensorHistory();
   const lastReadingRef = useRef<number>(0);
   const lastLeakStateRef = useRef<boolean>(false);
+  const lastOverflowStateRef = useRef<boolean>(false);
   
   const [sensorData, setSensorData] = useState<SensorData>({
     temp: 0,
@@ -31,7 +33,8 @@ export const useESP32Control = () => {
     pumpIn: false,
     pumpOut: false,
     feeder: false,
-    leak: false
+    leak: false,
+    overflow: false
   });
   const [isLoading, setIsLoading] = useState(false);
   const [lastAutoActivation, setLastAutoActivation] = useState<number>(0);
@@ -141,6 +144,7 @@ export const useESP32Control = () => {
         const newPumpIn = data.pump_in === '1';
         const newPumpOut = data.pump_out === '1';
         const newLeak = data.leak === '1';
+        const newOverflow = data.overflow === '1';
         const currentTime = Date.now();
         
         // Add to sensor history (limit to once per 30 seconds)
@@ -158,6 +162,16 @@ export const useESP32Control = () => {
             addEvent({ type: 'leak_cleared' });
           }
         }
+
+        // Check for overflow state change
+        if (newOverflow !== lastOverflowStateRef.current) {
+          lastOverflowStateRef.current = newOverflow;
+          if (newOverflow) {
+            addEvent({ type: 'overflow_detected' });
+          } else {
+            addEvent({ type: 'overflow_cleared' });
+          }
+        }
         
         setSensorData(prev => {
           const updated: SensorData = {
@@ -167,7 +181,8 @@ export const useESP32Control = () => {
             pumpIn: newPumpIn,
             pumpOut: newPumpOut,
             feeder: data.feeder === '1',
-            leak: newLeak
+            leak: newLeak,
+            overflow: newOverflow
           };
           
           // Smart Water Change Automation
@@ -186,8 +201,10 @@ export const useESP32Control = () => {
           else if (phOutOfRange) trigger = 'ph';
           else if (tdsOutOfRange) trigger = 'tds';
           
+          // Block automation if overflow is detected (fail-safe)
           const shouldTriggerWaterChange = 
             settings.enabled &&
+            !newOverflow &&  // Don't trigger if overflow detected
             (tempOutOfRange || phOutOfRange || tdsOutOfRange) &&
             !newPumpIn && 
             !newPumpOut && 
