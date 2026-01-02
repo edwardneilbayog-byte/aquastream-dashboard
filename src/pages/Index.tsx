@@ -27,7 +27,8 @@ const Index = () => {
     activateMasterPump,
     deactivateMasterPump,
     fetchSensorData, 
-    lastAutoActivation 
+    lastAutoActivation,
+    lastAutoFeeding
   } = useESP32Control();
   const { settings } = useAutomationSettings();
   const { settings: deviceSettings } = useDeviceSettings();
@@ -45,6 +46,13 @@ const Index = () => {
   const phOutOfRange = sensorData.ph > 0 && (sensorData.ph < settings.phMin || sensorData.ph > settings.phMax);
   const tdsOutOfRange = sensorData.tds > 0 && (sensorData.tds < settings.tdsMin || sensorData.tds > settings.tdsMax);
   const anyOutOfRange = tempOutOfRange || phOutOfRange || tdsOutOfRange;
+
+  // Calculate next feeding time
+  const feederIntervalMs = settings.feederIntervalHours * 60 * 60 * 1000;
+  const nextFeedingTime = lastAutoFeeding + feederIntervalMs;
+  const timeUntilNextFeeding = nextFeedingTime - Date.now();
+  const hoursUntilFeeding = Math.floor(timeUntilNextFeeding / (60 * 60 * 1000));
+  const minutesUntilFeeding = Math.floor((timeUntilNextFeeding % (60 * 60 * 1000)) / 60000);
 
   useEffect(() => {
     fetchSensorData();
@@ -187,14 +195,28 @@ const Index = () => {
             
             {/* Feeding Card */}
             <div className="glass-card p-6 space-y-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2.5 rounded-xl bg-control-feeder/15">
-                  <Fish className="h-5 w-5 text-control-feeder" />
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="p-2.5 rounded-xl bg-control-feeder/15">
+                    <Fish className="h-5 w-5 text-control-feeder" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-foreground">Fish Feeder</h3>
+                    <p className="text-xs text-muted-foreground">Press and hold to dispense food</p>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="font-semibold text-foreground">Fish Feeder</h3>
-                  <p className="text-xs text-muted-foreground">Press and hold to dispense food</p>
-                </div>
+                {settings.feederEnabled && (
+                  <div className="text-right">
+                    <p className="text-xs font-medium text-control-feeder">Auto-feeding</p>
+                    <p className="text-xs text-muted-foreground">
+                      {lastAutoFeeding === 0 
+                        ? 'Pending first feed'
+                        : timeUntilNextFeeding > 0 
+                          ? `Next in ${hoursUntilFeeding}h ${minutesUntilFeeding}m`
+                          : 'Due soon'}
+                    </p>
+                  </div>
+                )}
               </div>
               <ControlButton
                 title="Feed Now"

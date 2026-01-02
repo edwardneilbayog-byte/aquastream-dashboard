@@ -31,6 +31,8 @@ const getEventIcon = (type: HistoryEvent['type']) => {
   switch (type) {
     case 'auto_water_change':
       return RefreshCw;
+    case 'auto_feeder_triggered':
+      return Fish;
     case 'manual_pump_in_on':
     case 'manual_pump_in_off':
       return ArrowDownToLine;
@@ -56,6 +58,8 @@ const getEventLabel = (type: HistoryEvent['type']) => {
   switch (type) {
     case 'auto_water_change':
       return 'Auto Water Change';
+    case 'auto_feeder_triggered':
+      return 'Scheduled Feeding';
     case 'manual_pump_in_on':
       return 'Pump In ON';
     case 'manual_pump_in_off':
@@ -85,6 +89,7 @@ const getEventColor = (type: HistoryEvent['type']) => {
   if (type === 'leak_detected') return 'text-destructive';
   if (type === 'leak_cleared') return 'text-green-500';
   if (type === 'auto_water_change') return 'text-primary';
+  if (type === 'auto_feeder_triggered') return 'text-indigo-500';
   if (type.includes('pump_in')) return 'text-blue-500';
   if (type.includes('pump_out')) return 'text-orange-500';
   if (type.includes('master')) return 'text-purple-500';

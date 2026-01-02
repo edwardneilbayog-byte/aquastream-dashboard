@@ -5,6 +5,7 @@ export interface HistoryEvent {
   timestamp: number;
   type: 
     | 'auto_water_change'
+    | 'auto_feeder_triggered'
     | 'manual_pump_in_on' 
     | 'manual_pump_in_off'
     | 'manual_pump_out_on'
