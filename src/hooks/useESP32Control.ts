@@ -1,9 +1,11 @@
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { useToast } from '@/components/ui/use-toast';
 import { useAutomationSettings } from './useAutomationSettings';
 import { useAutomationHistory } from './useAutomationHistory';
 import { useDeviceSettings } from './useDeviceSettings';
 import { useSensorHistory } from './useSensorHistory';
+
+const LAST_FEEDING_KEY = 'aquastream_last_auto_feeding';
 
 interface SensorData {
   temp: number;
@@ -25,6 +27,14 @@ export const useESP32Control = () => {
   const lastReadingRef = useRef<number>(0);
   const lastLeakStateRef = useRef<boolean>(false);
   const lastOverflowStateRef = useRef<boolean>(false);
+  
+  const getStoredFeedingTime = () => {
+    const stored = localStorage.getItem(LAST_FEEDING_KEY);
+    return stored ? parseInt(stored, 10) : 0;
+  };
+  
+  const lastAutoFeedingRef = useRef<number>(getStoredFeedingTime());
+  const [lastAutoFeeding, setLastAutoFeeding] = useState<number>(getStoredFeedingTime);
   
   const [sensorData, setSensorData] = useState<SensorData>({
     temp: 0,
@@ -243,6 +253,31 @@ export const useESP32Control = () => {
               description: `${triggerMessage}. Both pumps running for ${settings.waterChangeDuration} seconds.`,
             });
           }
+
+          // Smart Feeder Automation
+          const feederIntervalMs = settings.feederIntervalHours * 60 * 60 * 1000;
+          const timeSinceLastFeeding = currentTime - lastAutoFeedingRef.current;
+          const shouldAutoFeed = 
+            settings.feederEnabled &&
+            (timeSinceLastFeeding >= feederIntervalMs || lastAutoFeedingRef.current === 0);
+
+          if (shouldAutoFeed) {
+            console.log('Auto-Feeder triggered: Scheduled feeding');
+            lastAutoFeedingRef.current = currentTime;
+            setLastAutoFeeding(currentTime);
+            localStorage.setItem(LAST_FEEDING_KEY, currentTime.toString());
+
+            // Send feeder signal multiple times for reliability
+            sendCommand('feeder', true);
+            setTimeout(() => sendCommand('feeder', true), 500);
+
+            addEvent({ type: 'auto_feeder_triggered' });
+
+            toast({
+              title: "Scheduled Feeding",
+              description: `Fish have been fed automatically. Next feeding in ${settings.feederIntervalHours} hours.`,
+            });
+          }
           
           return updated;
         });
@@ -264,6 +299,7 @@ export const useESP32Control = () => {
     activateMasterPump,
     deactivateMasterPump,
     fetchSensorData,
-    lastAutoActivation
+    lastAutoActivation,
+    lastAutoFeeding
   };
 };

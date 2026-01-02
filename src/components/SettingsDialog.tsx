@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
 import { useAutomationSettings } from "@/hooks/useAutomationSettings";
-import { RotateCcw } from "lucide-react";
+import { RotateCcw, Fish } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { useState, useEffect } from "react";
 import DeviceSettings from "./DeviceSettings";
@@ -61,9 +61,10 @@ const SettingsDialog = ({ open, onOpenChange }: SettingsDialogProps) => {
         </DialogHeader>
         
         <Tabs defaultValue="device" className="w-full">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="device">Device Connection</TabsTrigger>
-            <TabsTrigger value="automation">Water Change Automation</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="device">Device</TabsTrigger>
+            <TabsTrigger value="automation">Water Change</TabsTrigger>
+            <TabsTrigger value="feeder">Feeder</TabsTrigger>
           </TabsList>
           
           <TabsContent value="device" className="space-y-4">
@@ -228,6 +229,61 @@ const SettingsDialog = ({ open, onOpenChange }: SettingsDialogProps) => {
                 />
                 <p className="text-sm text-muted-foreground">
                   Minimum time between automatic water changes
+                </p>
+              </div>
+
+              <div className="flex gap-2 justify-end">
+                <Button variant="outline" onClick={handleResetAutomation}>
+                  <RotateCcw className="h-4 w-4 mr-2" />
+                  Reset to Defaults
+                </Button>
+                <Button onClick={handleSaveAutomation}>
+                  Save Changes
+                </Button>
+              </div>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="feeder" className="space-y-4">
+            <div className="space-y-6 py-4">
+              {/* Enable/Disable Feeder Automation */}
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label htmlFor="feeder-enabled" className="flex items-center gap-2">
+                    <Fish className="h-4 w-4 text-control-feeder" />
+                    Enable Auto-Feeding
+                  </Label>
+                  <p className="text-sm text-muted-foreground">
+                    Automatically feed fish at scheduled intervals
+                  </p>
+                </div>
+                <Switch
+                  id="feeder-enabled"
+                  checked={localSettings.feederEnabled}
+                  onCheckedChange={(checked) => setLocalSettings(prev => ({ ...prev, feederEnabled: checked }))}
+                />
+              </div>
+
+              {/* Feeding Interval */}
+              <div className="space-y-2">
+                <Label htmlFor="feeder-interval">Feeding Interval (hours)</Label>
+                <Input
+                  id="feeder-interval"
+                  type="number"
+                  min="1"
+                  max="72"
+                  value={localSettings.feederIntervalHours}
+                  onChange={(e) => setLocalSettings(prev => ({ ...prev, feederIntervalHours: parseInt(e.target.value) || 24 }))}
+                />
+                <p className="text-sm text-muted-foreground">
+                  Fish will be fed every {localSettings.feederIntervalHours} hour{localSettings.feederIntervalHours !== 1 ? 's' : ''} (1-72 hours)
+                </p>
+              </div>
+
+              <div className="p-4 bg-muted/50 rounded-lg">
+                <p className="text-sm text-muted-foreground">
+                  <strong>Note:</strong> The feeder hardware controls the actual feeding duration. 
+                  This automation sends a signal at the scheduled time to trigger the feeding mechanism.
                 </p>
               </div>
 

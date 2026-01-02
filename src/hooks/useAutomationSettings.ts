@@ -15,6 +15,9 @@ export interface AutomationSettings {
   waterChangeDuration: number;
   // Cooldown period in minutes
   cooldownPeriod: number;
+  // Feeder automation
+  feederEnabled: boolean;
+  feederIntervalHours: number;
 }
 
 const DEFAULT_SETTINGS: AutomationSettings = {
@@ -27,6 +30,8 @@ const DEFAULT_SETTINGS: AutomationSettings = {
   tdsMax: 400,
   waterChangeDuration: 60, // 1 minute
   cooldownPeriod: 60, // 1 hour
+  feederEnabled: true,
+  feederIntervalHours: 24,
 };
 
 const STORAGE_KEY = 'aquastream_automation_settings';
