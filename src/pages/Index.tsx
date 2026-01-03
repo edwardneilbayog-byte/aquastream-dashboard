@@ -8,11 +8,12 @@ import { AutomationHistory } from "@/components/AutomationHistory";
 import { SensorHistory } from "@/components/SensorHistory";
 import { LeakAlert } from "@/components/LeakAlert";
 import { OverflowAlert } from "@/components/OverflowAlert";
+import DemoSensorCharts from "@/components/DemoSensorCharts";
 import { useESP32Control } from "@/hooks/useESP32Control";
 import { useAutomationSettings } from "@/hooks/useAutomationSettings";
 import { useDeviceSettings } from "@/hooks/useDeviceSettings";
 import { Button } from "@/components/ui/button";
-import { Thermometer, Droplets, Waves, Fish, Droplet, History, BarChart3, ArrowDownToLine, ArrowUpFromLine, Power, ShieldAlert } from "lucide-react";
+import { Thermometer, Droplets, Waves, Fish, Droplet, History, BarChart3, ArrowDownToLine, ArrowUpFromLine, Power, ShieldAlert, LineChart } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const Index = () => {
@@ -361,6 +362,17 @@ const Index = () => {
               </button>
             </div>
           </div>
+        </section>
+
+        {/* Demo Sensor Analytics Section */}
+        <section className="space-y-4">
+          <h2 className="text-lg font-semibold text-foreground flex items-center gap-3">
+            <div className="p-2 rounded-xl bg-primary/10">
+              <LineChart className="h-5 w-5 text-primary" />
+            </div>
+            Sensor Analytics (Demo)
+          </h2>
+          <DemoSensorCharts />
         </section>
       </main>
 
