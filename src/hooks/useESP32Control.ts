@@ -267,9 +267,9 @@ export const useESP32Control = () => {
             setLastAutoFeeding(currentTime);
             localStorage.setItem(LAST_FEEDING_KEY, currentTime.toString());
 
-            // Send feeder signal multiple times for reliability
+            // Simulate button click: ON then OFF (hardware handles feeding duration)
             sendCommand('feeder', true);
-            setTimeout(() => sendCommand('feeder', true), 500);
+            setTimeout(() => sendCommand('feeder', false), 500);
 
             addEvent({ type: 'auto_feeder_triggered' });
 
