@@ -326,37 +326,56 @@ const Index = () => {
               
               {/* Pump Out */}
               <button
-                onClick={sensorData.pumpOut ? deactivatePumpOut : activatePumpOut}
+                onClick={sensorData.leak ? undefined : (sensorData.pumpOut ? deactivatePumpOut : activatePumpOut)}
+                disabled={sensorData.leak}
                 className={cn(
                   "relative p-5 rounded-2xl transition-all duration-300 overflow-hidden group",
                   "flex items-center gap-4 border-2",
-                  sensorData.pumpOut 
+                  sensorData.leak
+                    ? "bg-muted border-red-500/50 cursor-not-allowed opacity-75"
+                    : sensorData.pumpOut 
                     ? "bg-gradient-to-br from-orange-500 to-amber-600 border-orange-400 shadow-[0_4px_20px_-4px_rgba(249,115,22,0.5)]" 
                     : "bg-card border-border hover:border-orange-300 hover:shadow-md"
                 )}
               >
+                {/* Leak indicator overlay */}
+                {sensorData.leak && (
+                  <div className="absolute top-2 right-2">
+                    <ShieldAlert className="h-4 w-4 text-red-500" />
+                  </div>
+                )}
                 <div className={cn(
                   "p-3 rounded-xl transition-colors",
-                  sensorData.pumpOut ? "bg-white/20" : "bg-orange-500/10"
+                  sensorData.leak 
+                    ? "bg-red-500/10"
+                    : sensorData.pumpOut ? "bg-white/20" : "bg-orange-500/10"
                 )}>
                   <ArrowUpFromLine className={cn(
                     "h-6 w-6",
-                    sensorData.pumpOut ? "text-white" : "text-orange-500"
+                    sensorData.leak 
+                      ? "text-red-500"
+                      : sensorData.pumpOut ? "text-white" : "text-orange-500"
                   )} />
                 </div>
                 <div className="flex-1 text-left">
                   <p className={cn(
                     "font-semibold",
-                    sensorData.pumpOut ? "text-white" : "text-foreground"
+                    sensorData.leak
+                      ? "text-red-500"
+                      : sensorData.pumpOut ? "text-white" : "text-foreground"
                   )}>Drain Outlet</p>
                   <p className={cn(
                     "text-xs",
-                    sensorData.pumpOut ? "text-white/70" : "text-muted-foreground"
+                    sensorData.leak
+                      ? "text-red-500/70"
+                      : sensorData.pumpOut ? "text-white/70" : "text-muted-foreground"
                   )}>
-                    {sensorData.pumpOut ? "Running..." : "Tap to activate"}
+                    {sensorData.leak 
+                      ? "Blocked - Leak detected" 
+                      : sensorData.pumpOut ? "Running..." : "Tap to activate"}
                   </p>
                 </div>
-                {sensorData.pumpOut && (
+                {sensorData.pumpOut && !sensorData.leak && (
                   <div className="h-3 w-3 rounded-full bg-white animate-pulse" />
                 )}
               </button>
