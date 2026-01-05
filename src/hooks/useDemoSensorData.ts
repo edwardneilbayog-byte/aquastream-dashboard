@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
 
+export type TimeRange = "6h" | "12h" | "1d" | "3d" | "7d";
+
 export interface DemoDataPoint {
   timestamp: string;
   temperature: number;
@@ -7,7 +9,23 @@ export interface DemoDataPoint {
   tds: number;
 }
 
-export const useDemoSensorData = (days: 1 | 3 | 7) => {
+const getPointsForRange = (range: TimeRange): number => {
+  const pointsPerHour = 2; // 30-min intervals
+  switch (range) {
+    case "6h":
+      return 6 * pointsPerHour;
+    case "12h":
+      return 12 * pointsPerHour;
+    case "1d":
+      return 24 * pointsPerHour;
+    case "3d":
+      return 3 * 24 * pointsPerHour;
+    case "7d":
+      return 7 * 24 * pointsPerHour;
+  }
+};
+
+export const useDemoSensorData = (range: TimeRange) => {
   const [data, setData] = useState<DemoDataPoint[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -25,7 +43,6 @@ export const useDemoSensorData = (days: 1 | 3 | 7) => {
         
         const csvText = await response.text();
         const lines = csvText.trim().split("\n");
-        const headers = lines[0].split(",");
         
         const parsedData: DemoDataPoint[] = lines.slice(1).map((line) => {
           const values = line.split(",");
@@ -37,10 +54,8 @@ export const useDemoSensorData = (days: 1 | 3 | 7) => {
           };
         });
         
-        // Filter data based on selected days
-        // Take the last N days of data (48 points per day with 30-min intervals)
-        const pointsPerDay = 48;
-        const totalPoints = days * pointsPerDay;
+        // Filter data based on selected range
+        const totalPoints = getPointsForRange(range);
         const filteredData = parsedData.slice(-totalPoints);
         
         setData(filteredData);
@@ -52,7 +67,7 @@ export const useDemoSensorData = (days: 1 | 3 | 7) => {
     };
 
     fetchData();
-  }, [days]);
+  }, [range]);
 
   return { data, isLoading, error };
 };
