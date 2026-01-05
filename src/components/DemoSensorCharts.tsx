@@ -4,15 +4,15 @@ import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from "rec
 import { Thermometer, Droplets, Waves } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-type TimeRange = 1 | 3 | 7;
+type TimeRange = "6h" | "12h" | "1d" | "3d" | "7d";
 
 const DemoSensorCharts = () => {
-  const [timeRange, setTimeRange] = useState<TimeRange>(1);
+  const [timeRange, setTimeRange] = useState<TimeRange>("1d");
   const { data, isLoading, error } = useDemoSensorData(timeRange);
 
   const formatXAxis = (timestamp: string) => {
     const date = new Date(timestamp);
-    if (timeRange === 1) {
+    if (timeRange === "6h" || timeRange === "12h" || timeRange === "1d") {
       return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
     }
     return date.toLocaleDateString([], { month: "short", day: "numeric" });
@@ -39,8 +39,8 @@ const DemoSensorCharts = () => {
   return (
     <div className="space-y-6">
       {/* Time Range Selector */}
-      <div className="flex justify-center gap-2">
-        {([1, 3, 7] as TimeRange[]).map((range) => (
+      <div className="flex justify-center gap-2 flex-wrap">
+        {(["6h", "12h", "1d", "3d", "7d"] as TimeRange[]).map((range) => (
           <button
             key={range}
             onClick={() => setTimeRange(range)}
@@ -51,7 +51,7 @@ const DemoSensorCharts = () => {
                 : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
             )}
           >
-            {range}D
+            {range.toUpperCase()}
           </button>
         ))}
       </div>
